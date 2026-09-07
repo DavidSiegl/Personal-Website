@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="David Siegl">
+  <style>
+    /* Gleiche Akzentfarben wie die Website; SVG-Favicons folgen dem Theme des Browsers. */
+    .bg { fill: #2f6f5e; }
+    .fg { stroke: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #6fd6b5; }
+      .fg { stroke: #0d1114; }
+    }
+  </style>
+  <rect class="bg" width="64" height="64" rx="14"/>
+  <g class="fg" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 21 L31 32 L19 43"/>
+    <path d="M36 44 L46 44"/>
+  </g>
+</svg>
