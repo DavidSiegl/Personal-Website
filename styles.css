@@ -1,0 +1,449 @@
+/* Palette is defined once on :root; the dark block below only re-points the
+   same tokens, so every rule further down is theme-agnostic. */
+:root {
+  color-scheme: light dark;
+
+  --bg: #f7f7f5;
+  --bg-elevated: #ffffff;
+  --bg-tag: #eeeeea;
+  --text: #17181c;
+  --text-muted: #5c6070;
+  --border: #e2e2dc;
+  --accent: #2f6f5e;
+  --accent-contrast: #ffffff;
+  --shadow: 0 1px 2px rgba(20, 20, 25, .06), 0 8px 24px rgba(20, 20, 25, .06);
+
+  --maxw: 62rem;
+  --radius: 14px;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101215;
+    --bg-elevated: #171a1f;
+    --bg-tag: #21262e;
+    --text: #e8eaed;
+    --text-muted: #9aa2b1;
+    --border: #262c35;
+    --accent: #6fd6b5;
+    --accent-contrast: #0d1114;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 32px rgba(0, 0, 0, .35);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: 1rem; top: 1rem;
+  z-index: 10;
+  padding: .5rem .9rem;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-radius: 8px;
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  padding: clamp(3rem, 9vw, 7rem) 1.5rem clamp(2rem, 5vw, 3.5rem);
+  /* Radial wash instead of a hard band so the hero blends into the page. */
+  background:
+    radial-gradient(120% 90% at 15% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%),
+    var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.hero__inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: flex;
+  gap: clamp(1.75rem, 4vw, 3.25rem);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.avatar {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(9rem, 22vw, 12.5rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-tag);
+  border: 3px solid var(--bg-elevated);
+  box-shadow: var(--shadow);
+  display: grid;
+  place-items: center;
+}
+
+/* Initials sit underneath the photo and show through only while
+   assets/profile.jpg is missing (the <img> removes itself on error). */
+.avatar__initials {
+  font-family: var(--font-mono);
+  font-size: clamp(2.2rem, 6vw, 3rem);
+  letter-spacing: .05em;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero__text { flex: 1 1 22rem; min-width: 0; }
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: .85rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+h1 {
+  margin: .2rem 0 .4rem;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  line-height: 1.1;
+  letter-spacing: -.02em;
+}
+
+.tagline {
+  margin: 0 0 .9rem;
+  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bio {
+  margin: 0 0 1.6rem;
+  max-width: 46ch;
+  color: var(--text-muted);
+}
+
+/* ---------- Links ---------- */
+
+.links { display: flex; flex-wrap: wrap; gap: .7rem; }
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .6rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  font-weight: 600;
+  font-size: .95rem;
+  text-decoration: none;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.link svg { width: 1.1em; height: 1.1em; fill: currentColor; }
+
+.link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.link--primary {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+/* ---------- Sections ---------- */
+
+.section {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(2.5rem, 7vw, 4.5rem) 1.5rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  letter-spacing: -.01em;
+}
+
+.section__lede {
+  margin: .35rem 0 2rem;
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 1.1rem;
+}
+
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.35rem 1.4rem 1.5rem;
+  transition: border-color .15s ease, transform .15s ease;
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  transform: translateY(-2px);
+}
+
+.card h3 {
+  margin: 0 0 .9rem;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+}
+
+.tags li {
+  padding: .3rem .7rem;
+  border-radius: 8px;
+  background: var(--bg-tag);
+  font-family: var(--font-mono);
+  font-size: .82rem;
+  color: var(--text);
+}
+
+/* ---------- Footer ---------- */
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem 1.5rem 3rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1.5rem;
+  justify-content: space-between;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  color: var(--text-muted);
+  font-size: .9rem;
+}
+
+.footer p { margin: 0; }
+
+.footer__links { display: flex; gap: 1.1rem; }
+
+.footer a { text-decoration: none; }
+.footer a:hover { color: var(--accent); }
+
+/* Full-bleed tint, but the content stays on the shared --maxw column. */
+.section--alt {
+  max-width: none;
+  background: var(--bg-elevated);
+  border-block: 1px solid var(--border);
+}
+.section--alt > * {
+  max-width: var(--maxw);
+  margin-inline: auto;
+}
+
+/* ---------- Experience ---------- */
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 1.6rem;
+  border-left: 2px solid var(--border);
+  display: grid;
+  gap: 2rem;
+}
+
+.entry { position: relative; }
+
+.entry::before {
+  content: "";
+  position: absolute;
+  /* Half the dot plus the 2px rule, so it sits centred on the line. */
+  left: calc(-1.6rem - 6px);
+  top: .55rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.entry__meta {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.entry__role {
+  margin: .15rem 0 .1rem;
+  font-size: 1.15rem;
+}
+
+.entry__org {
+  margin: 0 0 .5rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.entry__note {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--text-muted);
+}
+
+/* ---------- Lists inside cards ---------- */
+
+.list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: .5rem;
+  color: var(--text-muted);
+  font-size: .95rem;
+}
+
+.list strong { color: var(--text); font-weight: 600; }
+
+.list--plain {
+  list-style: none;
+  padding-left: 0;
+}
+
+.list--plain li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--text);
+}
+
+.level {
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  color: var(--text-muted);
+}
+
+.note {
+  margin: 1rem 0 0;
+  font-size: .88rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Open Source / Projekte ---------- */
+
+.card__text {
+  margin: 0 0 1rem;
+  font-size: .95rem;
+  color: var(--text-muted);
+}
+
+.subhead {
+  margin: 2.75rem 0 1.1rem;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.projects {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: 1.1rem;
+}
+
+.project {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: 1.2rem 1.3rem 1.35rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+
+.project:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: var(--shadow);
+}
+
+.project:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.project__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+}
+
+.project__name {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Arrow hints that the card leaves the site, without an extra icon in the markup. */
+.project__name::after {
+  content: " ↗";
+  font-size: .8em;
+  opacity: .6;
+}
+
+.project__lang {
+  font-size: .78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.project__desc {
+  font-size: .92rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.project__desc code {
+  font-family: var(--font-mono);
+  font-size: .9em;
+  padding: .05em .35em;
+  border-radius: 5px;
+  background: var(--bg-tag);
+}
