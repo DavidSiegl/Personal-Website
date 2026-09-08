@@ -447,3 +447,164 @@ h2 {
   border-radius: 5px;
   background: var(--bg-tag);
 }
+
+/* ---------- Navigation zwischen den Seiten ---------- */
+
+.topbar {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 1.4rem 1.5rem .2rem;
+  display: flex;
+  gap: 1.4rem;
+  align-items: baseline;
+  font-size: .92rem;
+}
+
+.topbar a {
+  text-decoration: none;
+  color: var(--text-muted);
+  transition: color .15s ease;
+}
+
+.topbar a:hover { color: var(--accent); }
+
+.topbar__home {
+  font-weight: 600;
+  color: var(--text) !important;
+  margin-right: auto;
+}
+
+.topbar__here,
+.topbar a[aria-current="page"] {
+  color: var(--accent) !important;
+  font-weight: 600;
+}
+
+/* ---------- Unterseiten-Kopf ---------- */
+
+.pagehead {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 2.5rem) 1.5rem clamp(2rem, 5vw, 3rem);
+}
+
+.pagehead h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-bottom: 1.2rem;
+}
+
+.pagehead .bio { max-width: 60ch; }
+
+.pagehead code {
+  font-family: var(--font-mono);
+  font-size: .9em;
+  padding: .05em .35em;
+  border-radius: 5px;
+  background: var(--bg-tag);
+  color: var(--text);
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem 2.75rem;
+  margin: 2rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.stats dt {
+  font-size: .78rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.stats dd {
+  margin: .15rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ---------- Bücherregal ---------- */
+
+.shelf {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 1.5rem clamp(2rem, 5vw, 3rem);
+}
+
+.shelf h2 {
+  display: flex;
+  align-items: baseline;
+  gap: .7rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.shelf__count {
+  font-family: var(--font-mono);
+  font-size: .85rem;
+  font-weight: 500;
+  padding: .1rem .5rem;
+  border-radius: 999px;
+  background: var(--bg-tag);
+  color: var(--text-muted);
+}
+
+.shelf__lede {
+  margin: .4rem 0 1.75rem;
+  max-width: 62ch;
+  color: var(--text-muted);
+}
+
+.books {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: .1rem;
+  counter-reset: none;
+}
+
+.book {
+  display: grid;
+  /* Jahresspalte in fixer Breite, damit die Titel eine Kante bilden. */
+  grid-template-columns: 4.25rem 1fr;
+  gap: 0 1rem;
+  padding: .85rem .6rem;
+  border-radius: 10px;
+  transition: background .15s ease;
+}
+
+.book:hover { background: var(--bg-elevated); }
+
+.book__year {
+  font-family: var(--font-mono);
+  font-size: .85rem;
+  color: var(--text-muted);
+  padding-top: .15rem;
+}
+
+.book__body { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+
+.book__title { font-weight: 600; }
+
+.book__sub {
+  font-size: .93rem;
+  color: var(--text-muted);
+}
+
+.book__meta {
+  margin-top: .25rem;
+  font-size: .84rem;
+  color: var(--text-muted);
+  opacity: .85;
+}
+
+@media (max-width: 30rem) {
+  .book { grid-template-columns: 1fr; gap: .2rem; }
+  .book__year { padding-top: 0; }
+}
