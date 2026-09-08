@@ -21,9 +21,3 @@ Die thematische Gruppierung steht als `GROUPS` im Skript und ist Handarbeit. Neu
 Titel, die dort noch nicht zugeordnet sind, erscheinen auf der Seite unter „Weitere"
 und werden zusätzlich auf stderr gemeldet – sie fallen also nicht stillschweigend
 unter den Tisch.
-
-## Profilbild
-
-`assets/profile.jpg` ist ein quadratischer Ausschnitt des Originals `assets/Ich.jpg`;
-der ffmpeg-Befehl dafür steht in `assets/README.md`. Original und Lebenslauf-PDF sind
-über `.gitignore` vom Repo ausgenommen.
