@@ -29,10 +29,11 @@
       aktuellen API-Version.
     </p>
     <p class="bio">
-      Gelesenes landet bei mir in einem digitalen Zettelkasten: jeder Titel eine Notiz, verknüpft mit den
-      Themen, auf die er rekurriert, und mit den Autoren, die ihn geschrieben haben. Was hier steht,
-      ist genau dieser Bestand — alle Notizen, die auf die Hauptnode <code>Informatik</code>
-      verweisen – abgeschlossene ebenso wie gerade laufende Lektüre.
+      Gelesenes landet bei mir in einem digitalen Zettelkasten: jeder Titel eine Notiz, verknüpft
+      mit den Themen, auf die er rekurriert, und mit den Autoren, die ihn geschrieben haben. Was
+      hier steht, ist genau dieser Bestand — alle Notizen, die auf die Hauptnode
+      <code>Informatik</code> verweisen – abgeschlossene ebenso wie (noch) nicht abgeschlossene
+      Lektüre.
     </p>
 
     <dl class="stats">
@@ -43,7 +44,358 @@
     </dl>
   </header>
 
-  <main id="regal">
+  <main>
+      <section class="graph-block">
+        <h2>Themengraph</h2>
+        <p></p>
+        <div class="graph" hidden>
+          <div class="graph__stage">
+            <canvas class="graph__canvas" role="img"
+                    aria-label="Interaktiver Graph der Informatik-Notizen. Derselbe Inhalt steht darunter als Liste."></canvas>
+            <div class="graph__legend">
+              <span class="graph__key graph__key--thema">Thema</span>
+              <span class="graph__key graph__key--buch">Buch</span>
+            </div>
+            <button class="graph__reset" type="button">Ansicht zurücksetzen</button>
+            <p class="graph__usage">Knoten ziehen · Fläche schieben · Strg + Scrollen zoomt</p>
+          </div>
+          <aside class="graph__panel" aria-live="polite">
+            <p class="graph__hint">Einen Knoten wählen, um seine Verweise zu sehen.</p>
+          </aside>
+        </div>
+
+        <details class="zettel-fallback">
+          <summary>Alle 46 Notizen als Liste</summary>
+          <ol class="zettel-list">
+            <li class="zettel" id="z-ci-cd">
+              <button class="zettel__name" type="button" data-node="CI-CD">
+                CI-CD
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-git">Git</a> · <a href="#z-go-programmiersprache">Go</a> · <a href="#z-jenkins">Jenkins</a> · <a href="#z-kubernetes">Kubernetes</a> · <a href="#z-tekton">Tekton</a> · <a href="#z-building-cicd-systems-using-tekton">Building CICD Systems Using Tekton</a> · <a href="#z-continuous-delivery-with-docker-and-jenkins-rafal-leszko">Continuous Delivery with Docker and Jenkins</a> · <a href="#z-devops">DevOps</a> · <a href="#z-regressionstests">Regressionstests</a></span>
+            </li>
+            <li class="zettel" id="z-devops">
+              <button class="zettel__name" type="button" data-node="DevOps">
+                DevOps
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-ci-cd">CI-CD</a> · <a href="#z-codetests">Codetests</a> · <a href="#z-datenspeicher">Datenspeicher</a> · <a href="#z-infrastructure-as-code">Infrastructure as Code</a> · <a href="#z-netzwerk">Netzwerk</a> · <a href="#z-verschluesselung">Verschlüsselung</a> · <a href="#z-go-for-devops">Go for DevOps</a></span>
+            </li>
+            <li class="zettel" id="z-kubernetes">
+              <button class="zettel__name" type="button" data-node="Kubernetes">
+                Kubernetes
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-container">Container</a> · <a href="#z-ci-cd">CI-CD</a> · <a href="#z-kubernetes-up-and-running">Kubernetes Up and Running</a> · <a href="#z-openshift">Openshift</a> · <a href="#z-tekton">Tekton</a> · <a href="#z-the-book-of-kubernetes">The Book of Kubernetes</a></span>
+            </li>
+            <li class="zettel" id="z-go-programmiersprache">
+              <button class="zettel__name" type="button" data-node="Go (Programmiersprache)">
+                Go
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-c-programmiersprache">C</a> · <a href="#z-speicherverwaltung">Speicherverwaltung</a> · <a href="#z-ci-cd">CI-CD</a> · <a href="#z-closures">Closures</a> · <a href="#z-go-for-devops">Go for DevOps</a></span>
+            </li>
+            <li class="zettel" id="z-speicherverwaltung">
+              <button class="zettel__name" type="button" data-node="Speicherverwaltung">
+                Speicherverwaltung
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-c-programmiersprache">C</a> · <a href="#z-go-programmiersprache">Go</a> · <a href="#z-privilegienstufen-os">Privilegienstufen</a></span>
+            </li>
+            <li class="zettel" id="z-c-programmiersprache">
+              <button class="zettel__name" type="button" data-node="C (Programmiersprache)">
+                C
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-pointer">Pointer</a> · <a href="#z-speicherverwaltung">Speicherverwaltung</a> · <a href="#z-go-programmiersprache">Go</a></span>
+            </li>
+            <li class="zettel" id="z-datenspeicher">
+              <button class="zettel__name" type="button" data-node="Datenspeicher">
+                Datenspeicher
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-acid-transaktionen">ACID Transaktionen</a> · <a href="#z-sql-performanz">SQL-Performanz</a> · <a href="#z-verschluesselung">Verschlüsselung</a> · <a href="#z-cap-theorem">CAP-Theorem</a> · <a href="#z-devops">DevOps</a></span>
+            </li>
+            <li class="zettel" id="z-datenstrukturen">
+              <button class="zettel__name" type="button" data-node="Datenstrukturen">
+                Datenstrukturen
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-big-o-notation">Big O Notation</a> · <a href="#z-hash-tabelle">Hash Tabelle</a> · <a href="#z-sql-performanz">SQL-Performanz</a> · <a href="#z-algorithmen">Algorithmen</a></span>
+            </li>
+            <li class="zettel" id="z-tekton">
+              <button class="zettel__name" type="button" data-node="Tekton">
+                Tekton
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-building-cicd-systems-using-tekton">Building CICD Systems Using Tekton</a> · <a href="#z-ci-cd">CI-CD</a> · <a href="#z-git">Git</a> · <a href="#z-kubernetes">Kubernetes</a></span>
+            </li>
+            <li class="zettel" id="z-container">
+              <button class="zettel__name" type="button" data-node="Container">
+                Container
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-docker">Docker</a> · <a href="#z-kubernetes">Kubernetes</a> · <a href="#z-openshift">Openshift</a></span>
+            </li>
+            <li class="zettel" id="z-continuous-delivery-with-docker-and-jenkins-rafal-leszko">
+              <button class="zettel__name" type="button" data-node="Continuous Delivery with Docker and Jenkins - Rafal Leszko">
+                Continuous Delivery with Docker and Jenkins
+              </button>
+              <span class="zettel__kind">Buch</span>
+              <span class="zettel__refs"><a href="#z-ansible">Ansible</a> · <a href="#z-ci-cd">CI-CD</a> · <a href="#z-docker">Docker</a> · <a href="#z-jenkins">Jenkins</a></span>
+            </li>
+            <li class="zettel" id="z-hash-tabelle">
+              <button class="zettel__name" type="button" data-node="Hash Tabelle">
+                Hash Tabelle
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-big-o-notation">Big O Notation</a> · <a href="#z-datenstrukturen">Datenstrukturen</a> · <a href="#z-markow-ketten">Markow Ketten</a></span>
+            </li>
+            <li class="zettel" id="z-infrastructure-as-code">
+              <button class="zettel__name" type="button" data-node="Infrastructure as Code">
+                Infrastructure as Code
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-ansible">Ansible</a> · <a href="#z-devops">DevOps</a> · <a href="#z-opentofu">OpenTofu</a></span>
+            </li>
+            <li class="zettel" id="z-pointer">
+              <button class="zettel__name" type="button" data-node="Pointer">
+                Pointer
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-c-programmiersprache">C</a> · <a href="#z-closures">Closures</a> · <a href="#z-sql-performanz">SQL-Performanz</a></span>
+            </li>
+            <li class="zettel" id="z-big-o-notation">
+              <button class="zettel__name" type="button" data-node="Big O Notation">
+                Big O Notation
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-datenstrukturen">Datenstrukturen</a> · <a href="#z-hash-tabelle">Hash Tabelle</a> · <a href="#z-sortieralgorithmen">Sortieralgorithmen</a></span>
+            </li>
+            <li class="zettel" id="z-codetests">
+              <button class="zettel__name" type="button" data-node="Codetests">
+                Codetests
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-opentofu">OpenTofu</a> · <a href="#z-devops">DevOps</a> · <a href="#z-regressionstests">Regressionstests</a></span>
+            </li>
+            <li class="zettel" id="z-docker">
+              <button class="zettel__name" type="button" data-node="Docker">
+                Docker
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-container">Container</a> · <a href="#z-continuous-delivery-with-docker-and-jenkins-rafal-leszko">Continuous Delivery with Docker and Jenkins</a> · <a href="#z-docker-up-and-running">Docker Up and Running</a></span>
+            </li>
+            <li class="zettel" id="z-git">
+              <button class="zettel__name" type="button" data-node="Git">
+                Git
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-ci-cd">CI-CD</a> · <a href="#z-semantic-versioning">Semantic Versioning</a> · <a href="#z-tekton">Tekton</a></span>
+            </li>
+            <li class="zettel" id="z-netzwerk">
+              <button class="zettel__name" type="button" data-node="Netzwerk">
+                Netzwerk
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-internet-protocol-ip">IP</a> · <a href="#z-devops">DevOps</a> · <a href="#z-video-streaming-per-http">Video Streaming per HTTP</a></span>
+            </li>
+            <li class="zettel" id="z-sql-performanz">
+              <button class="zettel__name" type="button" data-node="SQL-Performanz">
+                SQL-Performanz
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-pointer">Pointer</a> · <a href="#z-datenspeicher">Datenspeicher</a> · <a href="#z-datenstrukturen">Datenstrukturen</a></span>
+            </li>
+            <li class="zettel" id="z-ansible">
+              <button class="zettel__name" type="button" data-node="Ansible">
+                Ansible
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-continuous-delivery-with-docker-and-jenkins-rafal-leszko">Continuous Delivery with Docker and Jenkins</a> · <a href="#z-infrastructure-as-code">Infrastructure as Code</a></span>
+            </li>
+            <li class="zettel" id="z-building-cicd-systems-using-tekton">
+              <button class="zettel__name" type="button" data-node="Building CICD Systems Using Tekton">
+                Building CICD Systems Using Tekton
+              </button>
+              <span class="zettel__kind">Buch</span>
+              <span class="zettel__refs"><a href="#z-ci-cd">CI-CD</a> · <a href="#z-tekton">Tekton</a></span>
+            </li>
+            <li class="zettel" id="z-closures">
+              <button class="zettel__name" type="button" data-node="Closures">
+                Closures
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-go-programmiersprache">Go</a> · <a href="#z-pointer">Pointer</a></span>
+            </li>
+            <li class="zettel" id="z-go-for-devops">
+              <button class="zettel__name" type="button" data-node="Go for DevOps">
+                Go for DevOps
+              </button>
+              <span class="zettel__kind">Buch</span>
+              <span class="zettel__refs"><a href="#z-devops">DevOps</a> · <a href="#z-go-programmiersprache">Go</a></span>
+            </li>
+            <li class="zettel" id="z-jenkins">
+              <button class="zettel__name" type="button" data-node="Jenkins">
+                Jenkins
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-ci-cd">CI-CD</a> · <a href="#z-continuous-delivery-with-docker-and-jenkins-rafal-leszko">Continuous Delivery with Docker and Jenkins</a></span>
+            </li>
+            <li class="zettel" id="z-markow-ketten">
+              <button class="zettel__name" type="button" data-node="Markow Ketten">
+                Markow Ketten
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-hash-tabelle">Hash Tabelle</a> · <a href="#z-ki">KI</a></span>
+            </li>
+            <li class="zettel" id="z-opentofu">
+              <button class="zettel__name" type="button" data-node="OpenTofu">
+                OpenTofu
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-codetests">Codetests</a> · <a href="#z-infrastructure-as-code">Infrastructure as Code</a></span>
+            </li>
+            <li class="zettel" id="z-openshift">
+              <button class="zettel__name" type="button" data-node="Openshift">
+                Openshift
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-kubernetes">Kubernetes</a> · <a href="#z-container">Container</a></span>
+            </li>
+            <li class="zettel" id="z-privilegienstufen-os">
+              <button class="zettel__name" type="button" data-node="Privilegienstufen (OS)">
+                Privilegienstufen
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-speicherverwaltung">Speicherverwaltung</a></span>
+            </li>
+            <li class="zettel" id="z-regressionstests">
+              <button class="zettel__name" type="button" data-node="Regressionstests">
+                Regressionstests
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-ci-cd">CI-CD</a> · <a href="#z-codetests">Codetests</a></span>
+            </li>
+            <li class="zettel" id="z-verschluesselung">
+              <button class="zettel__name" type="button" data-node="Verschlüsselung">
+                Verschlüsselung
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-datenspeicher">Datenspeicher</a> · <a href="#z-devops">DevOps</a></span>
+            </li>
+            <li class="zettel" id="z-acid-transaktionen">
+              <button class="zettel__name" type="button" data-node="ACID Transaktionen">
+                ACID Transaktionen
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-datenspeicher">Datenspeicher</a></span>
+            </li>
+            <li class="zettel" id="z-algorithmen">
+              <button class="zettel__name" type="button" data-node="Algorithmen">
+                Algorithmen
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-datenstrukturen">Datenstrukturen</a></span>
+            </li>
+            <li class="zettel" id="z-cap-theorem">
+              <button class="zettel__name" type="button" data-node="CAP-Theorem">
+                CAP-Theorem
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-datenspeicher">Datenspeicher</a></span>
+            </li>
+            <li class="zettel" id="z-docker-up-and-running">
+              <button class="zettel__name" type="button" data-node="Docker Up and Running">
+                Docker Up and Running
+              </button>
+              <span class="zettel__kind">Buch</span>
+              <span class="zettel__refs"><a href="#z-docker">Docker</a></span>
+            </li>
+            <li class="zettel" id="z-internet-protocol-ip">
+              <button class="zettel__name" type="button" data-node="Internet Protocol (IP)">
+                IP
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-netzwerk">Netzwerk</a></span>
+            </li>
+            <li class="zettel" id="z-ki">
+              <button class="zettel__name" type="button" data-node="KI">
+                KI
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-markow-ketten">Markow Ketten</a></span>
+            </li>
+            <li class="zettel" id="z-kubernetes-up-and-running">
+              <button class="zettel__name" type="button" data-node="Kubernetes Up and Running">
+                Kubernetes Up and Running
+              </button>
+              <span class="zettel__kind">Buch</span>
+              <span class="zettel__refs"><a href="#z-kubernetes">Kubernetes</a></span>
+            </li>
+            <li class="zettel" id="z-semantic-versioning">
+              <button class="zettel__name" type="button" data-node="Semantic Versioning">
+                Semantic Versioning
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-git">Git</a></span>
+            </li>
+            <li class="zettel" id="z-sortieralgorithmen">
+              <button class="zettel__name" type="button" data-node="Sortieralgorithmen">
+                Sortieralgorithmen
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-big-o-notation">Big O Notation</a></span>
+            </li>
+            <li class="zettel" id="z-the-book-of-kubernetes">
+              <button class="zettel__name" type="button" data-node="The Book of Kubernetes">
+                The Book of Kubernetes
+              </button>
+              <span class="zettel__kind">Buch</span>
+              <span class="zettel__refs"><a href="#z-kubernetes">Kubernetes</a></span>
+            </li>
+            <li class="zettel" id="z-video-streaming-per-http">
+              <button class="zettel__name" type="button" data-node="Video Streaming per HTTP">
+                Video Streaming per HTTP
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs"><a href="#z-netzwerk">Netzwerk</a></span>
+            </li>
+            <li class="zettel" id="z-duck-typing">
+              <button class="zettel__name" type="button" data-node="Duck typing">
+                Duck typing
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs">keine Verweise</span>
+            </li>
+            <li class="zettel" id="z-kybernetik">
+              <button class="zettel__name" type="button" data-node="Kybernetik">
+                Kybernetik
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs">keine Verweise</span>
+            </li>
+            <li class="zettel" id="z-passwortsicherheit">
+              <button class="zettel__name" type="button" data-node="Passwortsicherheit">
+                Passwortsicherheit
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs">keine Verweise</span>
+            </li>
+            <li class="zettel" id="z-zahlensysteme">
+              <button class="zettel__name" type="button" data-node="Zahlensysteme">
+                Zahlensysteme
+              </button>
+              <span class="zettel__kind">Thema</span>
+              <span class="zettel__refs">keine Verweise</span>
+            </li>
+          </ol>
+        </details>
+
+        <script id="graph-data" type="application/json">{"nodes": [{"id": "ACID Transaktionen", "label": "ACID Transaktionen", "slug": "acid-transaktionen", "kind": "thema", "out": [], "in": ["Datenspeicher"]}, {"id": "Algorithmen", "label": "Algorithmen", "slug": "algorithmen", "kind": "thema", "out": ["Datenstrukturen"], "in": []}, {"id": "Ansible", "label": "Ansible", "slug": "ansible", "kind": "thema", "out": [], "in": ["Continuous Delivery with Docker and Jenkins - Rafal Leszko", "Infrastructure as Code"]}, {"id": "Big O Notation", "label": "Big O Notation", "slug": "big-o-notation", "kind": "thema", "out": [], "in": ["Datenstrukturen", "Hash Tabelle", "Sortieralgorithmen"]}, {"id": "Building CICD Systems Using Tekton", "label": "Building CICD Systems Using Tekton", "slug": "building-cicd-systems-using-tekton", "kind": "buch", "out": ["CI-CD"], "in": ["Tekton"]}, {"id": "C (Programmiersprache)", "label": "C", "slug": "c-programmiersprache", "kind": "thema", "out": ["Pointer", "Speicherverwaltung"], "in": ["Go (Programmiersprache)", "Pointer", "Speicherverwaltung"]}, {"id": "CAP-Theorem", "label": "CAP-Theorem", "slug": "cap-theorem", "kind": "thema", "out": ["Datenspeicher"], "in": []}, {"id": "CI-CD", "label": "CI-CD", "slug": "ci-cd", "kind": "thema", "out": ["Git", "Go (Programmiersprache)", "Jenkins", "Kubernetes", "Tekton"], "in": ["Building CICD Systems Using Tekton", "Continuous Delivery with Docker and Jenkins - Rafal Leszko", "DevOps", "Regressionstests", "Tekton"]}, {"id": "Closures", "label": "Closures", "slug": "closures", "kind": "thema", "out": ["Go (Programmiersprache)", "Pointer"], "in": []}, {"id": "Codetests", "label": "Codetests", "slug": "codetests", "kind": "thema", "out": ["OpenTofu"], "in": ["DevOps", "Regressionstests"]}, {"id": "Container", "label": "Container", "slug": "container", "kind": "thema", "out": ["Docker", "Kubernetes", "Openshift"], "in": ["Kubernetes"]}, {"id": "Continuous Delivery with Docker and Jenkins - Rafal Leszko", "label": "Continuous Delivery with Docker and Jenkins", "slug": "continuous-delivery-with-docker-and-jenkins-rafal-leszko", "kind": "buch", "out": ["Ansible", "CI-CD", "Docker", "Jenkins"], "in": []}, {"id": "Datenspeicher", "label": "Datenspeicher", "slug": "datenspeicher", "kind": "thema", "out": ["ACID Transaktionen", "SQL-Performanz", "Verschlüsselung"], "in": ["CAP-Theorem", "DevOps"]}, {"id": "Datenstrukturen", "label": "Datenstrukturen", "slug": "datenstrukturen", "kind": "thema", "out": ["Big O Notation", "Hash Tabelle", "SQL-Performanz"], "in": ["Algorithmen", "Hash Tabelle"]}, {"id": "DevOps", "label": "DevOps", "slug": "devops", "kind": "thema", "out": ["CI-CD", "Codetests", "Datenspeicher", "Infrastructure as Code", "Netzwerk", "Verschlüsselung"], "in": ["Go for DevOps", "Infrastructure as Code"]}, {"id": "Docker", "label": "Docker", "slug": "docker", "kind": "thema", "out": [], "in": ["Container", "Continuous Delivery with Docker and Jenkins - Rafal Leszko", "Docker Up and Running"]}, {"id": "Docker Up and Running", "label": "Docker Up and Running", "slug": "docker-up-and-running", "kind": "buch", "out": ["Docker"], "in": []}, {"id": "Duck typing", "label": "Duck typing", "slug": "duck-typing", "kind": "thema", "out": [], "in": []}, {"id": "Git", "label": "Git", "slug": "git", "kind": "thema", "out": [], "in": ["CI-CD", "Semantic Versioning", "Tekton"]}, {"id": "Go (Programmiersprache)", "label": "Go", "slug": "go-programmiersprache", "kind": "thema", "out": ["C (Programmiersprache)", "Speicherverwaltung"], "in": ["CI-CD", "Closures", "Go for DevOps", "Speicherverwaltung"]}, {"id": "Go for DevOps", "label": "Go for DevOps", "slug": "go-for-devops", "kind": "buch", "out": ["DevOps", "Go (Programmiersprache)"], "in": []}, {"id": "Hash Tabelle", "label": "Hash Tabelle", "slug": "hash-tabelle", "kind": "thema", "out": ["Big O Notation", "Datenstrukturen"], "in": ["Datenstrukturen", "Markow Ketten"]}, {"id": "Internet Protocol (IP)", "label": "IP", "slug": "internet-protocol-ip", "kind": "thema", "out": [], "in": ["Netzwerk"]}, {"id": "Infrastructure as Code", "label": "Infrastructure as Code", "slug": "infrastructure-as-code", "kind": "thema", "out": ["Ansible", "DevOps", "OpenTofu"], "in": ["DevOps"]}, {"id": "Jenkins", "label": "Jenkins", "slug": "jenkins", "kind": "thema", "out": [], "in": ["CI-CD", "Continuous Delivery with Docker and Jenkins - Rafal Leszko"]}, {"id": "KI", "label": "KI", "slug": "ki", "kind": "thema", "out": [], "in": ["Markow Ketten"]}, {"id": "Kubernetes", "label": "Kubernetes", "slug": "kubernetes", "kind": "thema", "out": ["Container"], "in": ["CI-CD", "Container", "Kubernetes Up and Running", "Openshift", "Tekton", "The Book of Kubernetes"]}, {"id": "Kubernetes Up and Running", "label": "Kubernetes Up and Running", "slug": "kubernetes-up-and-running", "kind": "buch", "out": ["Kubernetes"], "in": []}, {"id": "Kybernetik", "label": "Kybernetik", "slug": "kybernetik", "kind": "thema", "out": [], "in": []}, {"id": "Markow Ketten", "label": "Markow Ketten", "slug": "markow-ketten", "kind": "thema", "out": ["Hash Tabelle", "KI"], "in": []}, {"id": "Netzwerk", "label": "Netzwerk", "slug": "netzwerk", "kind": "thema", "out": ["Internet Protocol (IP)"], "in": ["DevOps", "Video Streaming per HTTP"]}, {"id": "OpenTofu", "label": "OpenTofu", "slug": "opentofu", "kind": "thema", "out": [], "in": ["Codetests", "Infrastructure as Code"]}, {"id": "Openshift", "label": "Openshift", "slug": "openshift", "kind": "thema", "out": ["Kubernetes"], "in": ["Container"]}, {"id": "Passwortsicherheit", "label": "Passwortsicherheit", "slug": "passwortsicherheit", "kind": "thema", "out": [], "in": []}, {"id": "Pointer", "label": "Pointer", "slug": "pointer", "kind": "thema", "out": ["C (Programmiersprache)"], "in": ["C (Programmiersprache)", "Closures", "SQL-Performanz"]}, {"id": "Privilegienstufen (OS)", "label": "Privilegienstufen", "slug": "privilegienstufen-os", "kind": "thema", "out": ["Speicherverwaltung"], "in": ["Speicherverwaltung"]}, {"id": "Regressionstests", "label": "Regressionstests", "slug": "regressionstests", "kind": "thema", "out": ["CI-CD", "Codetests"], "in": []}, {"id": "SQL-Performanz", "label": "SQL-Performanz", "slug": "sql-performanz", "kind": "thema", "out": ["Pointer"], "in": ["Datenspeicher", "Datenstrukturen"]}, {"id": "Semantic Versioning", "label": "Semantic Versioning", "slug": "semantic-versioning", "kind": "thema", "out": ["Git"], "in": []}, {"id": "Sortieralgorithmen", "label": "Sortieralgorithmen", "slug": "sortieralgorithmen", "kind": "thema", "out": ["Big O Notation"], "in": []}, {"id": "Speicherverwaltung", "label": "Speicherverwaltung", "slug": "speicherverwaltung", "kind": "thema", "out": ["C (Programmiersprache)", "Go (Programmiersprache)", "Privilegienstufen (OS)"], "in": ["C (Programmiersprache)", "Go (Programmiersprache)", "Privilegienstufen (OS)"]}, {"id": "Tekton", "label": "Tekton", "slug": "tekton", "kind": "thema", "out": ["Building CICD Systems Using Tekton", "CI-CD", "Git", "Kubernetes"], "in": ["CI-CD"]}, {"id": "The Book of Kubernetes", "label": "The Book of Kubernetes", "slug": "the-book-of-kubernetes", "kind": "buch", "out": ["Kubernetes"], "in": []}, {"id": "Verschlüsselung", "label": "Verschlüsselung", "slug": "verschluesselung", "kind": "thema", "out": [], "in": ["Datenspeicher", "DevOps"]}, {"id": "Video Streaming per HTTP", "label": "Video Streaming per HTTP", "slug": "video-streaming-per-http", "kind": "thema", "out": ["Netzwerk"], "in": []}, {"id": "Zahlensysteme", "label": "Zahlensysteme", "slug": "zahlensysteme", "kind": "thema", "out": [], "in": []}]}</script>
+      </section>
+
+    <div id="regal">
       <section class="shelf">
         <h2>Handwerk &amp; Programmierung <span class="shelf__count">11</span></h2>
         <p class="shelf__lede">Wie man Code schreibt, der ein Jahr später noch lesbar ist – und wie man die Werkzeuge beherrscht, mit denen man ihn schreibt.</p>
@@ -378,6 +730,7 @@
         </li>
         </ol>
       </section>
+    </div>
   </main>
 
   <footer class="footer">
@@ -389,6 +742,7 @@
     </p>
   </footer>
 
+  <script src="graph.js"></script>
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

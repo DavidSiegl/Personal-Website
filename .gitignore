@@ -1,3 +1,6 @@
 # Quelldateien, die die Website nicht ausliefert – bleiben lokal
 Profile.pdf
 assets/Ich.jpg
+
+# build-lektuere.py importiert graph_data
+tools/__pycache__/

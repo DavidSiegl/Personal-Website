@@ -5,10 +5,14 @@ Aufgenommen wird jede Notiz, die auf [[Informatik]] verweist und #gelesen trägt
 Die Gruppierung in GROUPS ist Handarbeit: Titel, die dort fehlen, landen sichtbar
 unter "Weitere" und werden auf stderr gemeldet, statt still zu verschwinden.
 
+Den Themengraph unter der Bücherliste liefert graph_data.section().
+
     python3 tools/build-lektuere.py
 """
 import html, pathlib, re, sys
 from datetime import date
+
+import graph_data
 
 VAULT = pathlib.Path.home() / "Documents/Zettelkasten"
 OUT = pathlib.Path(__file__).resolve().parent.parent / "lektuere.html"
@@ -114,6 +118,8 @@ def main():
     if rest:
         print(f"Nicht zugeordnet (landen unter 'Weitere'): {rest}", file=sys.stderr)
 
+    graph = graph_data.section()
+
     total_pages = sum(int(b["pages"]) for b in books.values() if b["pages"])
     years = sorted(b["year"] for b in books.values() if b["year"])
 
@@ -158,14 +164,15 @@ def main():
       Vieles an meiner Arbeit lässt sich nicht zusammensuchen. Wer eine Datenbank betreibt, muss
       verstehen, warum es ein Write-Ahead-Log gibt; wer Deployments automatisiert, sollte wissen,
       welches Problem Continuous Delivery ursprünglich gelöst hat. Dieses Verständnis kommt aus
-      Büchern, die ein Thema von Grund auf entwickeln – nicht aus der Dokumentation der jeweils
+      Büchern, die ein Thema von Grund auf entwickeln – nicht nur aus der Dokumentation der jeweils
       aktuellen API-Version.
     </p>
     <p class="bio">
-      Gelesenes landet bei mir in einem Zettelkasten: jeder Titel eine Notiz, verknüpft mit den
-      Themen, auf die er einzahlt, und mit den Autoren, die ihn geschrieben haben. Was hier steht,
-      ist genau dieser Bestand — alle Notizen, die auf die Hauptnode <code>Informatik</code>
-      verweisen – abgeschlossene ebenso wie gerade laufende Lektüre.
+      Gelesenes landet bei mir in einem digitalen Zettelkasten: jeder Titel eine Notiz, verknüpft
+      mit den Themen, auf die er rekurriert, und mit den Autoren, die ihn geschrieben haben. Was
+      hier steht, ist genau dieser Bestand — alle Notizen, die auf die Hauptnode
+      <code>Informatik</code> verweisen – abgeschlossene ebenso wie (noch) nicht abgeschlossene
+      Lektüre.
     </p>
 
     <dl class="stats">
@@ -176,8 +183,12 @@ def main():
     </dl>
   </header>
 
-  <main id="regal">
+  <main>
+{graph}
+
+    <div id="regal">
 {chr(10).join(sections)}
+    </div>
   </main>
 
   <footer class="footer">
@@ -189,6 +200,7 @@ def main():
     </p>
   </footer>
 
+  <script src="graph.js"></script>
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
