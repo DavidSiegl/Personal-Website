@@ -73,7 +73,7 @@
   var width = 0, height = 0;
   var alpha = 1, running = false;
   var selected = null, hovered = null, dragging = null, panning = null;
-  var refit = true;       // erst nach Reset/Resize wieder automatisch rahmen
+  var refit = true;       // nach Aufbau und Reset einmal automatisch rahmen
 
   function theme() {
     var s = getComputedStyle(document.body);
@@ -97,7 +97,7 @@
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (!selected && !running) { refit = true; fit(); }
+    if (!selected && !running) fit();
     draw();
   }
 
@@ -168,7 +168,6 @@
                (height - pad * 2) / Math.max(y1 - y0, 1))));
     view.x = -(x0 + x1) / 2 * view.scale;
     view.y = -(y0 + y1) / 2 * view.scale;
-    refit = false;
   }
 
   function toScreen(n) {
@@ -246,7 +245,7 @@
       // Ohne Animation: bis zur Ruhelage rechnen und einmal zeichnen.
       while (alpha > 0.02) { tick(); alpha *= 0.94; }
       running = false;
-      if (refit) fit();
+      if (refit) { fit(); refit = false; }
       draw();
       return;
     }
@@ -254,7 +253,7 @@
       tick();
       alpha *= 0.985;
       if (alpha > 0.02 || dragging) { draw(); requestAnimationFrame(frame); }
-      else { running = false; if (refit) fit(); draw(); }
+      else { running = false; if (refit) { fit(); refit = false; } draw(); }
     }());
   }
 
@@ -280,9 +279,11 @@
 
   function renderPanel(n) {
     if (!n) {
-      panel.innerHTML = '<p class="graph__hint">Einen Knoten wählen, um seine Verweise zu sehen.</p>';
+      panel.hidden = true;
+      panel.innerHTML = '';
       return;
     }
+    panel.hidden = false;
     function list(ids) {
       if (!ids.length) return '<span class="graph__none">—</span>';
       return ids.map(function (id) {
@@ -318,7 +319,7 @@
       select(hit);
       reheat(0.3);
     } else {
-      panning = { x: px - view.x, y: py - view.y };
+      panning = { x: px - view.x, y: py - view.y, fromX: px, fromY: py };
     }
   });
 
@@ -351,8 +352,15 @@
     if (hit !== hovered) { hovered = hit; draw(); }
   });
 
-  function endPointer() {
+  function endPointer(ev) {
     if (dragging) { dragging.fixed = false; dragging = null; reheat(0.2); }
+    if (panning && ev && ev.clientX !== undefined) {
+      var box = canvas.getBoundingClientRect();
+      var moved = Math.abs(ev.clientX - box.left - panning.fromX) +
+                  Math.abs(ev.clientY - box.top - panning.fromY);
+      // Tippen statt Schieben: die Auswahl aufheben und die Karte schliessen.
+      if (moved < 5) select(null);
+    }
     panning = null;
   }
   canvas.addEventListener('pointerup', endPointer);

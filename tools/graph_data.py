@@ -177,18 +177,12 @@ def slug(name):
 
 def section():
     """Der Graph-Kasten als HTML-Abschnitt, fertig zum Einsetzen in die Seite."""
-    data, edges, groups = collect()
-    hub = max(data["nodes"], key=lambda n: len(n["out"]) + len(n["in"]))
-    books = sum(1 for n in data["nodes"] if n["kind"] == "buch")
-    lede = (f'{len(data["nodes"])} Notizen, {len(edges)} Verweise. Die gefüllten Knoten sind '
-            f'Themennotizen, die {books} hohlen jene Bücher, die selbst auf ein Thema zeigen; '
-            f'am dichtesten verknüpft ist {hub["label"]}.')
+    data, _edges, _groups = collect()
 
     # Die Daten stehen inline im Dokument, nicht in einer eigenen Datei: so
     # funktioniert der Graph auch, wenn die Seite über file:// geöffnet wird.
     return f'''      <section class="graph-block">
         <h2>Themengraph</h2>
-        <p class="shelf__lede">{lede}</p>
 
         <div class="graph" hidden>
           <div class="graph__stage">
@@ -200,10 +194,8 @@ def section():
             </div>
             <button class="graph__reset" type="button">Ansicht zurücksetzen</button>
             <p class="graph__usage">Knoten ziehen · Fläche schieben · Strg + Scrollen zoomt</p>
+            <aside class="graph__panel" aria-live="polite" hidden></aside>
           </div>
-          <aside class="graph__panel" aria-live="polite">
-            <p class="graph__hint">Einen Knoten wählen, um seine Verweise zu sehen.</p>
-          </aside>
         </div>
 
         <details class="zettel-fallback">

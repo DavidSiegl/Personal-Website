@@ -619,15 +619,12 @@ h2 {
 
 .graph-block h2 {
   padding-top: 2rem;
+  /* Ohne Lede darunter traegt die Ueberschrift den Abstand zum Graphen selbst. */
+  margin-bottom: 1.75rem;
   border-top: 1px solid var(--border);
 }
 
-.graph {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 16rem;
-  gap: 1.25rem;
-  align-items: start;
-}
+.graph { display: block; }
 
 /* display: grid schlaegt das hidden-Attribut - ohne diese Regel bliebe der
    leere Rahmen stehen, wenn graph.js nicht laeuft. */
@@ -647,7 +644,7 @@ h2 {
   width: 100%;
   /* Feste Hoehe: das Layout darf nicht davon abhaengen, wie weit sich der
      Graph gerade auseinanderschiebt. */
-  height: clamp(24rem, 60vh, 34rem);
+  height: clamp(26rem, 78vh, 46rem);
   touch-action: none;
   cursor: grab;
 }
@@ -695,14 +692,21 @@ h2 {
 .graph__reset:hover { color: var(--accent); border-color: var(--accent); }
 
 .graph__panel {
+  position: absolute;
+  left: .8rem;
+  top: .8rem;
+  width: 15rem;
+  max-height: calc(100% - 4.5rem);
+  overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.1rem 1.2rem;
+  padding: .9rem 1rem;
+  /* Deckend, nicht durchscheinend: darunter laufen Kanten und Beschriftungen. */
   background: var(--bg-elevated);
-  min-height: 8rem;
+  box-shadow: var(--shadow);
 }
 
-.graph__hint { margin: 0; font-size: .88rem; color: var(--text-muted); }
+.graph__panel[hidden] { display: none; }
 
 .graph__title { margin: 0; font-size: 1.05rem; }
 
@@ -794,9 +798,21 @@ h2 {
 .zettel__refs a:hover { color: var(--accent); }
 
 @media (max-width: 52rem) {
-  .graph { grid-template-columns: minmax(0, 1fr); }
   .zettel { grid-template-columns: minmax(0, 1fr) 4rem; }
   .zettel__refs { grid-column: 1 / -1; }
+}
+
+/* Auf schmalen Schirmen deckt eine Karte oben links den halben Graphen ab -
+   dort legt sie sich flach an den unteren Rand. */
+@media (max-width: 34rem) {
+  .graph__panel {
+    left: .6rem;
+    right: .6rem;
+    top: auto;
+    bottom: .6rem;
+    width: auto;
+    max-height: 45%;
+  }
 }
 
 .graph__usage {
