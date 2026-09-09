@@ -161,9 +161,9 @@ def main():
     <p class="eyebrow">Aus dem Zettelkasten</p>
     <h1>Lektüre</h1>
     <p class="bio">
-      Vieles an meiner Arbeit lässt sich nicht zusammensuchen. Wer eine Datenbank betreibt, muss
-      verstehen, warum es ein Write-Ahead-Log gibt; wer Deployments automatisiert, sollte wissen,
-      welches Problem Continuous Delivery ursprünglich gelöst hat. Dieses Verständnis kommt aus
+      Vieles an meiner Arbeit lässt sich nur durch gründliches und eingehendes (Selbst-)Studium erlernen sowie implementieren.
+      Wer eine Datenbank betreibt, muss verstehen, warum es ein Write-Ahead-Log gibt; wer Deployments automatisiert,
+      sollte wissen, welches Problem Continuous Delivery ursprünglich gelöst hat. Dieses Verständnis kommt aus
       Büchern, die ein Thema von Grund auf entwickeln – nicht nur aus der Dokumentation der jeweils
       aktuellen API-Version.
     </p>
@@ -171,9 +171,29 @@ def main():
       Gelesenes landet bei mir in einem digitalen Zettelkasten: jeder Titel eine Notiz, verknüpft
       mit den Themen, auf die er rekurriert, und mit den Autoren, die ihn geschrieben haben. Was
       hier steht, ist genau dieser Bestand — alle Notizen, die auf die Hauptnode
-      <code>Informatik</code> verweisen – abgeschlossene ebenso wie (noch) nicht abgeschlossene
-      Lektüre.
+      <code>Informatik</code> verweisen – abgeschlossene ebenso wie sich (noch) in der geistigen Pipeline
+      befindende Lektüre.
     </p>
+
+    <div class="epigraphs">
+      <figure class="epigraph">
+        <blockquote>
+          <p>Jede Notiz ist nur ein Element, das seine Qualität erst aus dem Netz der Verweisungen
+          und Rückverweisungen im System erhält. Eine Notiz, die an dieses Netz nicht angeschlossen
+          ist, geht im Zettelkasten verloren, wird vom Zettelkasten vergessen.</p>
+        </blockquote>
+        <figcaption>Niklas Luhmann, <cite>Kommunikation mit Zettelkästen</cite>, 1981</figcaption>
+      </figure>
+      <figure class="epigraph">
+        <blockquote>
+          <p>man erinnere sich eines beliebigen kleineren Erlebniskomplexes, sei es »Volksschule«,
+          »alte Sommerreise« – immer erscheinen zunächst, zeitrafferisch, einzelne sehr helle Bilder
+          […] ein solches Gemisch von »Foto=Text=Einheiten« ist schließlich das Endergebnis jedes
+          bewußten Erinnerungsversuches.</p>
+        </blockquote>
+        <figcaption>Arno Schmidt, <cite>Berechnungen I</cite>, 1955</figcaption>
+      </figure>
+    </div>
 
     <dl class="stats">
       <div><dt>Titel</dt><dd>{len(books)}</dd></div>
