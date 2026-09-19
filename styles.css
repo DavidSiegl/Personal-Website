@@ -862,3 +862,62 @@ h2 {
 @media (max-width: 40rem) {
   .graph__usage { display: none; }
 }
+
+/* ---------- Zertifikate ---------- */
+
+.certs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: .1rem;
+}
+
+.cert {
+  display: grid;
+  /* Same fixed date column as .book, so both subpages share one edge. */
+  grid-template-columns: 4.25rem 1fr;
+  gap: 0 1rem;
+  padding: .95rem .6rem;
+  border-radius: 10px;
+  transition: background .15s ease;
+}
+
+.cert:hover { background: var(--bg-elevated); }
+
+.cert__date {
+  font-family: var(--font-mono);
+  font-size: .85rem;
+  color: var(--text-muted);
+  padding-top: .15rem;
+}
+
+.cert__body { display: flex; flex-direction: column; gap: .15rem; min-width: 0; }
+
+.cert__title { font-weight: 600; }
+
+a.cert__title { text-decoration: none; }
+a.cert__title:hover { color: var(--accent); }
+a.cert__title:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+a.cert__title::after {
+  content: " ↗";
+  font-size: .8em;
+  opacity: .6;
+}
+
+.cert__meta {
+  font-size: .84rem;
+  color: var(--text-muted);
+  opacity: .85;
+  /* Credential IDs are long unbroken tokens; let them wrap on phones. */
+  overflow-wrap: anywhere;
+}
+
+.cert .tags { margin-top: .55rem; gap: .35rem; }
+.cert .tags li { font-size: .76rem; padding: .2rem .55rem; }
+
+@media (max-width: 30rem) {
+  .cert { grid-template-columns: 1fr; gap: .2rem; }
+  .cert__date { padding-top: 0; }
+}

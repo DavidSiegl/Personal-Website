@@ -5,8 +5,10 @@ Build-Schritt und ohne Abhängigkeiten. Lokal ansehen mit `xdg-open index.html`.
 
     index.html      Startseite: Profil, Kenntnisse, Open Source & Homelab
     lektuere.html   Unterseite: Fachlektüre und Themengraph (generiert, siehe unten)
+    zertifizierungen.html
+                    Unterseite: Kurse und Zertifikate (von Hand gepflegt, Quelle LinkedIn)
     graph.js        Kraftlayout für den Themengraph
-    styles.css      gemeinsames Stylesheet beider Seiten
+    styles.css      gemeinsames Stylesheet aller Seiten
     assets/         Profilbild, Favicons
     tools/          Generatoren
 
