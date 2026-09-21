@@ -271,8 +271,9 @@ h2 {
   background: var(--bg-elevated);
   border-block: 1px solid var(--border);
 }
+/* Minus the section's own side padding, so alt and plain sections share one edge. */
 .section--alt > * {
-  max-width: var(--maxw);
+  max-width: calc(var(--maxw) - 3rem);
   margin-inline: auto;
 }
 
@@ -921,3 +922,105 @@ a.cert__title::after {
   .cert { grid-template-columns: 1fr; gap: .2rem; }
   .cert__date { padding-top: 0; }
 }
+
+/* ---------- Homelab: Fließtext und Diagramme ---------- */
+
+/* The measure goes on the paragraphs, not on .prose: inside .section--alt every
+   child is centred on --maxw, and a narrower .prose would drift off the edge. */
+.prose p { max-width: 68ch; margin: 0 0 1rem; }
+
+.prose code,
+.section__lede code,
+.card__text code,
+.diagram figcaption code {
+  font-family: var(--font-mono);
+  font-size: .88em;
+  padding: .05em .35em;
+  border-radius: 5px;
+  background: var(--bg-tag);
+  color: var(--text);
+}
+
+.notes { margin-top: 2rem; }
+
+.diagram-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.diagram {
+  margin: 2rem 0 0;
+  padding: 1.25rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.section--alt .diagram { margin-inline: auto; background: var(--bg); }
+.section--alt .d-box { fill: var(--bg-elevated); }
+
+/* The diagrams are drawn at ~900 units wide; below 44rem their labels would
+   shrink past legibility, so the figure scrolls sideways instead of the page. */
+.diagram__scroll { overflow-x: auto; }
+.diagram svg { display: block; width: 100%; min-width: 44rem; height: auto; }
+
+.diagram figcaption {
+  margin-top: 1rem;
+  font-size: .87rem;
+  color: var(--text-muted);
+  max-width: 68ch;
+}
+
+.d-zone {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-opacity: .45;
+  stroke-width: 1.2;
+  stroke-dasharray: 6 5;
+}
+
+.d-zone-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  fill: var(--text-muted);
+}
+
+.d-group {
+  fill: color-mix(in srgb, var(--accent) 6%, transparent);
+  stroke: color-mix(in srgb, var(--accent) 40%, var(--border));
+  stroke-width: 1.2;
+}
+
+/* A VM inside a host group: the boundary matters, the fill would only add noise. */
+.d-vm {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent) 55%, var(--border));
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.d-group-title { font-size: 15px; font-weight: 700; fill: var(--text); }
+
+.d-box {
+  fill: var(--bg);
+  stroke: color-mix(in srgb, var(--text) 22%, var(--bg));
+  stroke-width: 1;
+}
+
+.d-box--accent { stroke: var(--accent); stroke-width: 1.6; }
+
+.d-title { font-size: 14px; font-weight: 600; fill: var(--text); }
+.d-mono { font-family: var(--font-mono); font-weight: 500; fill: var(--accent); }
+
+.d-sub,
+.d-edge-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--text-muted);
+}
+
+.d-note { font-size: 12.5px; font-style: italic; fill: var(--text-muted); }
+
+.d-edge { fill: none; stroke: var(--text-muted); stroke-width: 1.4; }
+.d-edge--accent { stroke: var(--accent); stroke-width: 2; }
+
+.d-head { fill: var(--text-muted); }
+.d-head--accent { fill: var(--accent); }

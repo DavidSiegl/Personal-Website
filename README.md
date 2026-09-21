@@ -4,6 +4,7 @@ Statische persönliche Website – HTML, CSS und ein wenig Vanilla-JavaScript, o
 Build-Schritt und ohne Abhängigkeiten. Lokal ansehen mit `xdg-open index.html`.
 
     index.html      Startseite: Profil, Kenntnisse, Open Source & Homelab
+    homelab.html    Unterseite: Architektur des Homelabs mit Diagrammen (von Hand gepflegt)
     lektuere.html   Unterseite: Fachlektüre und Themengraph (generiert, siehe unten)
     zertifizierungen.html
                     Unterseite: Kurse und Zertifikate (von Hand gepflegt, Quelle LinkedIn)

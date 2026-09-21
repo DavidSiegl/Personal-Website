@@ -154,6 +154,7 @@ def main():
 
   <nav class="topbar" aria-label="Hauptnavigation">
     <a class="topbar__home" href="index.html">David Siegl</a>
+    <a href="homelab.html">Homelab</a>
     <a class="topbar__here" href="lektuere.html" aria-current="page">Lektüre</a>
     <a href="zertifizierungen.html">Zertifizierungen</a>
   </nav>
@@ -216,6 +217,7 @@ def main():
     <p>© <span id="year">{date.today().year}</span> David Siegl</p>
     <p class="footer__links">
       <a href="index.html">Startseite</a>
+      <a href="homelab.html">Homelab</a>
       <a href="zertifizierungen.html">Zertifizierungen</a>
       <a href="https://github.com/DavidSiegl" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="mailto:david.siegl95@gmail.com">E-Mail</a>
