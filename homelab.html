@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Homelab — David Siegl</title>
-  <meta name="description" content="Architektur des Homelabs von David Siegl: zwei Knoten, Docker Compose, Traefik und CrowdSec am Rand, Deployment über Jenkins und Renovate, Monitoring mit Prometheus und Grafana.">
+  <meta name="description" content="Architektur des Homelabs von David Siegl: zwei Knoten, Docker Compose, Traefik und CrowdSec am Rand, Single Sign-on mit Authentik, Deployment über Jenkins und Renovate, Monitoring mit Prometheus und Grafana.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/favicon.png" sizes="96x96" type="image/png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -49,9 +49,9 @@
 
     <dl class="stats">
       <div><dt>Knoten</dt><dd>2</dd></div>
-      <div><dt>Compose-Stacks</dt><dd>17</dd></div>
-      <div><dt>Öffentliche Router</dt><dd>9</dd></div>
-      <div><dt>Dashboards</dt><dd>5</dd></div>
+      <div><dt>Compose-Stacks</dt><dd>19</dd></div>
+      <div><dt>Öffentliche Router</dt><dd>10</dd></div>
+      <div><dt>Dashboards</dt><dd>6</dd></div>
     </dl>
   </header>
 
@@ -65,7 +65,7 @@
           Die Arbeit ist auf zwei Geräte verteilt. Der <strong>Raspberry Pi</strong> ist der
           Rand des Netzes: Nur er nimmt Verbindungen aus dem Internet an, terminiert TLS,
           entscheidet über Sperren und beobachtet alles andere. Das <strong>NAS</strong> trägt
-          die Last – Medien, Dateien, Bücher, CI – und ist von außen nie direkt erreichbar.
+          die Last – Medien, Dateien, Bücher, Anmeldung, CI – und ist von außen nie direkt erreichbar.
           Auf seiner Hardware läuft Proxmox als Hypervisor, die Docker-Dienste in einer
           schlichten Debian-VM darüber.
         </p>
@@ -77,11 +77,11 @@
 
       <figure class="diagram">
         <div class="diagram__scroll">
-          <svg viewBox="0 0 900 476" role="img" aria-labelledby="d1-title d1-desc">
+          <svg viewBox="0 0 900 542" role="img" aria-labelledby="d1-title d1-desc">
             <title id="d1-title">Topologie des Homelabs</title>
-            <desc id="d1-desc">Anfragen aus dem Internet erreichen über den Router nur Traefik auf dem Raspberry Pi. Traefik fragt Docker über einen nur lesenden socket-proxy ab und tauscht sich mit CrowdSec aus. Von Traefik gehen die Anfragen über das Heimnetz an die Dienstgruppen auf dem NAS. Dort laufen sie in einer Debian-VM unter dem Hypervisor Proxmox: Medien, Bücher, Daten, Blog und Notizen sowie CI/CD.</desc>
+            <desc id="d1-desc">Anfragen aus dem Internet erreichen über den Router nur Traefik auf dem Raspberry Pi. Traefik fragt Docker über einen nur lesenden socket-proxy ab und tauscht sich mit CrowdSec aus. Von Traefik gehen die Anfragen über das Heimnetz an die Dienstgruppen auf dem NAS. Dort laufen sie in einer Debian-VM unter dem Hypervisor Proxmox: Anmeldung mit Authentik, Medien, Bücher, Daten, Blog und Notizen sowie CI/CD.</desc>
 
-            <rect class="d-zone" x="340" y="16" width="545" height="444" rx="18"/>
+            <rect class="d-zone" x="340" y="16" width="545" height="510" rx="18"/>
             <text class="d-zone-label" x="358" y="40">HEIMNETZ</text>
 
             <rect class="d-box" x="16" y="109" width="124" height="64" rx="10"/>
@@ -93,7 +93,7 @@
             <text class="d-sub" x="238" y="155" text-anchor="middle">nur 80 · 443</text>
 
             <!-- Raspberry Pi -->
-            <rect class="d-group" x="356" y="52" width="240" height="392" rx="14"/>
+            <rect class="d-group" x="356" y="52" width="240" height="458" rx="14"/>
             <text class="d-group-title" x="372" y="78">Raspberry Pi</text>
             <text class="d-sub" x="372" y="96">Rand · Sicherheit · Monitoring</text>
 
@@ -101,62 +101,68 @@
             <text class="d-title" x="386" y="137">Traefik</text>
             <text class="d-sub" x="386" y="155">TLS · Routing · Bouncer</text>
 
-            <rect class="d-box" x="372" y="196" width="100" height="58" rx="9"/>
-            <text class="d-title" x="422" y="221" text-anchor="middle">socket-proxy</text>
-            <text class="d-sub" x="422" y="239" text-anchor="middle">nur lesend</text>
+            <rect class="d-box" x="372" y="204" width="100" height="58" rx="9"/>
+            <text class="d-title" x="422" y="229" text-anchor="middle">socket-proxy</text>
+            <text class="d-sub" x="422" y="247" text-anchor="middle">nur lesend</text>
 
-            <rect class="d-box" x="480" y="196" width="100" height="58" rx="9"/>
-            <text class="d-title" x="530" y="221" text-anchor="middle">CrowdSec</text>
-            <text class="d-sub" x="530" y="239" text-anchor="middle">Log → Sperren</text>
+            <rect class="d-box" x="480" y="204" width="100" height="58" rx="9"/>
+            <text class="d-title" x="530" y="229" text-anchor="middle">CrowdSec</text>
+            <text class="d-sub" x="530" y="247" text-anchor="middle">Log → Sperren</text>
 
-            <rect class="d-box" x="372" y="276" width="208" height="58" rx="9"/>
-            <text class="d-title" x="386" y="301">Prometheus · Grafana</text>
-            <text class="d-sub" x="386" y="319">Alertmanager · Probes</text>
+            <rect class="d-box" x="372" y="310" width="208" height="58" rx="9"/>
+            <text class="d-title" x="386" y="335">Prometheus · Grafana</text>
+            <text class="d-sub" x="386" y="353">Alertmanager · Probes</text>
 
-            <rect class="d-box" x="372" y="356" width="208" height="58" rx="9"/>
-            <text class="d-title" x="386" y="381">Exporter</text>
-            <text class="d-sub" x="386" y="399">node-exporter · cAdvisor</text>
+            <rect class="d-box" x="372" y="416" width="208" height="58" rx="9"/>
+            <text class="d-title" x="386" y="441">Exporter</text>
+            <text class="d-sub" x="386" y="459">node-exporter · cAdvisor</text>
 
             <!-- NAS -->
-            <rect class="d-group" x="620" y="52" width="249" height="392" rx="14"/>
+            <rect class="d-group" x="620" y="52" width="249" height="458" rx="14"/>
             <text class="d-group-title" x="636" y="78">NAS <tspan class="d-mono">· Proxmox</tspan></text>
             <text class="d-sub" x="636" y="96">Debian-VM · Docker Compose</text>
-            <rect class="d-vm" x="628" y="104" width="233" height="332" rx="11"/>
+            <rect class="d-vm" x="628" y="104" width="233" height="398" rx="11"/>
 
+            <!-- NAS boxes: y = 112 + i * 66 -->
             <rect class="d-box" x="636" y="112" width="217" height="58" rx="9"/>
-            <text class="d-title" x="650" y="137">Medien</text>
-            <text class="d-sub" x="650" y="155">Jellyfin · Jellyseerr · *arr</text>
+            <text class="d-title" x="650" y="137">Anmeldung</text>
+            <text class="d-sub" x="650" y="155">Authentik · LDAP-Outpost</text>
 
             <rect class="d-box" x="636" y="178" width="217" height="58" rx="9"/>
-            <text class="d-title" x="650" y="203">Bücher</text>
-            <text class="d-sub" x="650" y="221">Calibre-Web · Audiobookshelf</text>
+            <text class="d-title" x="650" y="203">Medien</text>
+            <text class="d-sub" x="650" y="221">Jellyfin · Jellyseerr · *arr</text>
 
             <rect class="d-box" x="636" y="244" width="217" height="58" rx="9"/>
-            <text class="d-title" x="650" y="269">Daten</text>
-            <text class="d-sub" x="650" y="287">Nextcloud AIO · Syncthing</text>
+            <text class="d-title" x="650" y="269">Bücher</text>
+            <text class="d-sub" x="650" y="287">Calibre-Web · Audiobookshelf</text>
 
             <rect class="d-box" x="636" y="310" width="217" height="58" rx="9"/>
-            <text class="d-title" x="650" y="335">Blog &amp; Notizen</text>
-            <text class="d-sub" x="650" y="353">Ghost · CouchDB</text>
+            <text class="d-title" x="650" y="335">Daten</text>
+            <text class="d-sub" x="650" y="353">Nextcloud AIO · Syncthing</text>
 
-            <rect class="d-box" x="636" y="376" width="217" height="52" rx="9"/>
-            <text class="d-title" x="650" y="398">CI/CD</text>
-            <text class="d-sub" x="650" y="415">Jenkins · SonarQube</text>
+            <rect class="d-box" x="636" y="376" width="217" height="58" rx="9"/>
+            <text class="d-title" x="650" y="401">Blog &amp; Notizen</text>
+            <text class="d-sub" x="650" y="419">Ghost · CouchDB</text>
+
+            <rect class="d-box" x="636" y="442" width="217" height="58" rx="9"/>
+            <text class="d-title" x="650" y="467">CI/CD</text>
+            <text class="d-sub" x="650" y="485">Jenkins · SonarQube</text>
 
             <!-- Request path -->
             <path class="d-edge d-edge--accent" d="M140 141 H176" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M300 141 H372" marker-end="url(#arrow-accent)"/>
             <text class="d-edge-label" x="321" y="132" text-anchor="middle">:443</text>
 
-            <path class="d-edge d-edge--accent" d="M580 141 H606 V402"/>
+            <path class="d-edge d-edge--accent" d="M580 141 H606 V471"/>
             <path class="d-edge d-edge--accent" d="M606 141 H636" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M606 207 H636" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M606 273 H636" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M606 339 H636" marker-end="url(#arrow-accent)"/>
-            <path class="d-edge d-edge--accent" d="M606 402 H636" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge d-edge--accent" d="M606 405 H636" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge d-edge--accent" d="M606 471 H636" marker-end="url(#arrow-accent)"/>
 
-            <path class="d-edge" d="M422 170 V196" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M530 170 V196" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M422 170 V204" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M530 170 V204" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
           </svg>
         </div>
         <figcaption>
@@ -177,7 +183,8 @@
           Client selbst; jeder Router auf <code>:443</code> ist deshalb öffentlich, egal auf
           welchen Namen er hört. Grafana, Prometheus, Alertmanager und die Jenkins-Oberfläche
           liegen darum auf einem eigenen Entrypoint, <code>:8443</code>, den der Router
-          nicht weiterleitet – zusätzlich hinter Basic Auth.
+          nicht weiterleitet – die Monitoring-Oberflächen zusätzlich hinter Basic Auth,
+          Jenkins hinter seinem eigenen Login.
         </p>
         <p>
           Beide Sicherungen sind so gebaut, dass sie im Zweifel <em>schließen</em>: Der interne
@@ -192,7 +199,7 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 360" role="img" aria-labelledby="d2-title d2-desc">
             <title id="d2-title">Entrypoints von Traefik</title>
-            <desc id="d2-desc">Aus dem Internet erreichbar sind nur web auf Port 80, das auf 443 umleitet, und websecure auf Port 443, an dem die CrowdSec-Middleware hängt und hinter dem neun öffentliche Router liegen. Clients im Heimnetz erreichen zusätzlich internal auf Port 8443 mit Basic Auth für Grafana, Prometheus, Alertmanager und die Jenkins-Oberfläche. Prometheus liest Traefiks Metriken über den Entrypoint metrics auf Port 8082.</desc>
+            <desc id="d2-desc">Aus dem Internet erreichbar sind nur web auf Port 80, das auf 443 umleitet, und websecure auf Port 443, an dem die CrowdSec-Middleware hängt und hinter dem zehn öffentliche Router liegen. Clients im Heimnetz erreichen zusätzlich internal auf Port 8443 für Grafana, Prometheus und Alertmanager hinter Basic Auth sowie die Jenkins-Oberfläche. Prometheus liest Traefiks Metriken über den Entrypoint metrics auf Port 8082.</desc>
 
             <rect class="d-box" x="16" y="87" width="150" height="56" rx="10"/>
             <text class="d-title" x="91" y="112" text-anchor="middle">Internet</text>
@@ -227,7 +234,7 @@
 
             <rect class="d-box d-box--accent" x="610" y="104" width="274" height="84" rx="10"/>
             <text class="d-title" x="626" y="129">Öffentliche Dienste</text>
-            <text class="d-sub" x="626" y="148">9 Router · Let's Encrypt</text>
+            <text class="d-sub" x="626" y="148">10 Router · Let's Encrypt</text>
             <text class="d-sub" x="626" y="166">Jenkins: nur /github-webhook/</text>
 
             <rect class="d-box" x="610" y="206" width="274" height="56" rx="10"/>
@@ -283,7 +290,58 @@
       </div>
     </section>
 
-    <section id="deployment" class="section">
+    <section id="anmeldung" class="section">
+      <h2>Eine Anmeldung</h2>
+      <p class="section__lede">Single Sign-on, das niemanden aussperrt, wenn es ausfällt.</p>
+
+      <div class="prose">
+        <p>
+          Authentik auf dem NAS ist das eine Login für alle, die die Dienste nutzen – mich,
+          den Haushalt und gelegentliche Gäste. Nextcloud, Audiobookshelf, Calibre-Web und
+          Shelfmark sprechen OpenID Connect. Jellyfin bekommt LDAP über einen eigenen
+          Outpost, denn die Apps auf Fernseher und Telefon können kein OIDC, schicken aber
+          ein Passwort. Traefik veröffentlicht die Anmeldeseite wie jeden anderen Dienst,
+          hinter derselben CrowdSec-Middleware.
+        </p>
+        <p>
+          Gruppen, Provider, Anwendungen und Einladungs-Flows liegen als Blueprints im
+          Repository; der Worker wendet sie beim Start und bei jeder Änderung an. Was in
+          der Oberfläche daran geändert wird, setzt er zurück.
+        </p>
+      </div>
+
+      <div class="grid notes">
+        <article class="card">
+          <h3>Lokaler Admin bleibt</h3>
+          <p class="card__text">
+            Jeder angebundene Dienst behält ein lokales Admin-Konto neben SSO. Das ist der
+            Rückweg für jede Integration und der Zugang, wenn Authentik ausfällt – ein
+            Ausfall kostet Bequemlichkeit, nie den Zugriff. Jenkins, CouchDB, Ghost und
+            SonarQube sind bewusst gar nicht angebunden.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Kein Socket im Worker</h3>
+          <p class="card__text">
+            Die Compose-Datei von upstream gibt dem Worker den Docker-Socket, damit er
+            Outposts selbst starten kann – Codeausführung dort wäre root auf dem NAS. Hier
+            ist der LDAP-Outpost ein gewöhnlicher Compose-Dienst, und die Datenbank sitzt in
+            einem Netz ohne Route nach draußen.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Gäste per Einladung</h3>
+          <p class="card__text">
+            Es gibt keine öffentliche Registrierung. Neue Konten entstehen über einmalige
+            Einladungslinks, deren Flow die Gruppe festlegt; Gäste sehen nur Jellyfin und
+            die Bücher-Apps. Ob die Anmeldung wirklich bereit ist, prüft eine Probe auf den
+            Readiness-Endpunkt, der auch die Datenbank einschließt.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="deployment" class="section section--alt">
       <h2>Vom Commit zum Container</h2>
       <p class="section__lede">Git ist die einzige Quelle; niemand ruft auf den Knoten <code>docker compose up</code> von Hand auf.</p>
 
@@ -423,15 +481,18 @@
       </div>
     </section>
 
-    <section id="monitoring" class="section section--alt">
+    <section id="monitoring" class="section">
       <h2>Monitoring</h2>
       <p class="section__lede">Ein laufender Container ist noch kein funktionierender Dienst.</p>
 
       <div class="prose">
         <p>
           Prometheus, Grafana und Alertmanager laufen auf dem Pi und beobachten beide Knoten:
-          node-exporter für den Host, cAdvisor für die Container, dazu Traefiks eigene
-          Metriken. Der blackbox-exporter ruft die öffentlichen URLs von außen ab und fängt
+          node-exporter für den Host, cAdvisor für die Container, dazu die eigenen Metriken
+          von Traefik und Authentik. Die Festplatten und ZFS-Pools hängen am Proxmox-Host,
+          nicht an der VM – dort läuft deshalb ein eigener node-exporter für
+          Laufwerkstemperaturen, Pool-Zustand, Prüfsummenfehler und das Alter des letzten
+          Scrubs. Der blackbox-exporter ruft die öffentlichen URLs von außen ab und fängt
           damit, was ein gesunder Container nicht verrät – eine kaputte Route oder ein
           abgelaufenes Zertifikat. Selbst der Jenkins-Webhook wird geprüft: Die Probe erwartet
           Jenkins' eigenes <code>405</code>, denn eine Route, die nicht mehr passt, würde
@@ -446,61 +507,73 @@
 
       <figure class="diagram">
         <div class="diagram__scroll">
-          <svg viewBox="0 0 900 412" role="img" aria-labelledby="d4-title d4-desc">
+          <svg viewBox="0 0 900 540" role="img" aria-labelledby="d4-title d4-desc">
             <title id="d4-title">Monitoring-Datenfluss</title>
-            <desc id="d4-desc">Prometheus auf dem Raspberry Pi sammelt Metriken von sechs Quellen: node-exporter und cAdvisor auf dem NAS und auf dem Pi, Traefik, CrowdSec, dem blackbox-exporter, der die öffentlichen URLs prüft, und dem json-exporter, der zwei Tasmota-Steckdosen abfragt. Grafana zeigt die Daten in fünf Dashboards, Alertmanager verschickt Alarme per E-Mail.</desc>
+            <desc id="d4-desc">Prometheus auf dem Raspberry Pi sammelt Metriken von acht Quellen: node-exporter und cAdvisor in der NAS-VM und auf dem Pi, node-exporter mit ZFS- und Laufwerksmetriken auf dem Proxmox-Host, Traefik, CrowdSec, Authentik, dem blackbox-exporter, der die öffentlichen URLs prüft, und dem json-exporter, der zwei Tasmota-Steckdosen und die Authentik-API abfragt. Grafana zeigt die Daten in sechs Dashboards, Alertmanager verschickt Alarme per E-Mail.</desc>
 
+            <!-- Sources: y = 24 + i * 64 -->
             <rect class="d-box" x="16" y="24" width="240" height="52" rx="9"/>
-            <text class="d-title" x="30" y="46">NAS</text>
+            <text class="d-title" x="30" y="46">NAS-VM</text>
             <text class="d-sub" x="30" y="64">node-exporter · cAdvisor</text>
 
             <rect class="d-box" x="16" y="88" width="240" height="52" rx="9"/>
-            <text class="d-title" x="30" y="110">Raspberry Pi</text>
-            <text class="d-sub" x="30" y="128">node-exporter · cAdvisor</text>
+            <text class="d-title" x="30" y="110">Proxmox-Host</text>
+            <text class="d-sub" x="30" y="128">node-exporter · ZFS · Laufwerke</text>
 
             <rect class="d-box" x="16" y="152" width="240" height="52" rx="9"/>
-            <text class="d-title" x="30" y="174">Traefik</text>
-            <text class="d-sub" x="30" y="192">Anfragen je Router · TLS</text>
+            <text class="d-title" x="30" y="174">Raspberry Pi</text>
+            <text class="d-sub" x="30" y="192">node-exporter · cAdvisor</text>
 
             <rect class="d-box" x="16" y="216" width="240" height="52" rx="9"/>
-            <text class="d-title" x="30" y="238">CrowdSec</text>
-            <text class="d-sub" x="30" y="256">gelesen vs. geparst</text>
+            <text class="d-title" x="30" y="238">Traefik</text>
+            <text class="d-sub" x="30" y="256">Anfragen je Router · TLS</text>
 
             <rect class="d-box" x="16" y="280" width="240" height="52" rx="9"/>
-            <text class="d-title" x="30" y="302">blackbox-exporter</text>
-            <text class="d-sub" x="30" y="320">öffentliche URLs von außen</text>
+            <text class="d-title" x="30" y="302">CrowdSec</text>
+            <text class="d-sub" x="30" y="320">gelesen vs. geparst</text>
 
             <rect class="d-box" x="16" y="344" width="240" height="52" rx="9"/>
-            <text class="d-title" x="30" y="366">json-exporter</text>
-            <text class="d-sub" x="30" y="384">2 Tasmota-Steckdosen</text>
+            <text class="d-title" x="30" y="366">Authentik</text>
+            <text class="d-sub" x="30" y="384">Flows · Outposts</text>
 
-            <rect class="d-box d-box--accent" x="350" y="178" width="200" height="64" rx="10"/>
-            <text class="d-title" x="450" y="205" text-anchor="middle">Prometheus</text>
-            <text class="d-sub" x="450" y="223" text-anchor="middle">30 s · 15 Tage · 4 GB</text>
+            <rect class="d-box" x="16" y="408" width="240" height="52" rx="9"/>
+            <text class="d-title" x="30" y="430">blackbox-exporter</text>
+            <text class="d-sub" x="30" y="448">öffentliche URLs von außen</text>
 
-            <rect class="d-box" x="644" y="92" width="240" height="64" rx="10"/>
-            <text class="d-title" x="658" y="119">Grafana</text>
-            <text class="d-sub" x="658" y="137">5 provisionierte Dashboards</text>
+            <rect class="d-box" x="16" y="472" width="240" height="52" rx="9"/>
+            <text class="d-title" x="30" y="494">json-exporter</text>
+            <text class="d-sub" x="30" y="512">Steckdosen · Authentik-API</text>
 
-            <rect class="d-box" x="644" y="264" width="240" height="64" rx="10"/>
-            <text class="d-title" x="658" y="291">Alertmanager</text>
-            <text class="d-sub" x="658" y="309">Regeln → E-Mail</text>
+            <rect class="d-box d-box--accent" x="350" y="242" width="200" height="64" rx="10"/>
+            <text class="d-title" x="450" y="269" text-anchor="middle">Prometheus</text>
+            <text class="d-sub" x="450" y="287" text-anchor="middle">30 s · 15 Tage · 4 GB</text>
 
-            <path class="d-edge" d="M256 50 C 310 50, 300 185, 350 185" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 114 C 310 114, 300 195, 350 195" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 178 C 300 178, 305 205, 350 205" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 242 C 300 242, 305 215, 350 215" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 306 C 310 306, 300 225, 350 225" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 370 C 310 370, 300 235, 350 235" marker-end="url(#arrow)"/>
+            <rect class="d-box" x="644" y="156" width="240" height="64" rx="10"/>
+            <text class="d-title" x="658" y="183">Grafana</text>
+            <text class="d-sub" x="658" y="201">6 provisionierte Dashboards</text>
 
-            <path class="d-edge d-edge--accent" d="M550 200 C 600 200, 595 124, 644 124" marker-end="url(#arrow-accent)"/>
-            <path class="d-edge d-edge--accent" d="M550 220 C 600 220, 595 296, 644 296" marker-end="url(#arrow-accent)"/>
+            <rect class="d-box" x="644" y="328" width="240" height="64" rx="10"/>
+            <text class="d-title" x="658" y="355">Alertmanager</text>
+            <text class="d-sub" x="658" y="373">Regeln → E-Mail</text>
+
+            <path class="d-edge" d="M256 50 C 310 50, 300 246, 350 246" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 114 C 310 114, 300 254, 350 254" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 178 C 310 178, 300 262, 350 262" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 242 C 310 242, 300 270, 350 270" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 306 C 310 306, 300 278, 350 278" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 370 C 310 370, 300 286, 350 286" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 434 C 310 434, 300 294, 350 294" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 498 C 310 498, 300 302, 350 302" marker-end="url(#arrow)"/>
+
+            <path class="d-edge d-edge--accent" d="M550 264 C 600 264, 595 188, 644 188" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge d-edge--accent" d="M550 284 C 600 284, 595 360, 644 360" marker-end="url(#arrow-accent)"/>
           </svg>
         </div>
         <figcaption>
           Alles läuft über Prometheus. Die Steckdosen liest ein json-exporter aus der
           HTTP-API, die sie ohnehin anbieten – eigene Firmware nach jedem OTA-Update wäre
-          die Alternative gewesen.
+          die Alternative gewesen. Derselbe Exporter holt Nutzer- und Sitzungszahlen mit
+          einem nur lesenden Token aus der Authentik-API.
         </figcaption>
       </figure>
 
@@ -515,10 +588,10 @@
           </p>
         </article>
         <article class="card">
-          <h3>Fünf Dashboards, provisioniert</h3>
+          <h3>Sechs Dashboards, provisioniert</h3>
           <p class="card__text">
-            Host-Zustand, Container und Dienste, Traefik-Anfragen und Sicherheit, Steckdosen
-            mit Stromkosten pro Tag und CrowdSec. Alle liegen als JSON im Repository und
+            Host-Zustand samt ZFS-Pools, Container und Dienste, Traefik-Anfragen und
+            Sicherheit, Steckdosen mit Stromkosten pro Tag, CrowdSec und Authentik. Alle liegen als JSON im Repository und
             erscheinen auf einer frischen Grafana-Instanz ohne Import.
           </p>
         </article>
@@ -533,7 +606,7 @@
       </div>
     </section>
 
-    <section id="dienste" class="section">
+    <section id="dienste" class="section section--alt">
       <h2>Dienste</h2>
       <p class="section__lede">Was auf den beiden Knoten läuft.</p>
 
@@ -549,15 +622,16 @@
         <article class="card">
           <h3>NAS · Medien &amp; Bücher</h3>
           <ul class="tags">
-            <li>Jellyfin</li><li>Jellyseerr</li><li>Radarr</li><li>Prowlarr</li>
+            <li>Jellyfin</li><li>Jellyseerr</li><li>Radarr</li><li>Sonarr</li><li>Prowlarr</li>
             <li>qBittorrent</li><li>Calibre-Web</li><li>Audiobookshelf</li><li>Shelfmark</li>
           </ul>
         </article>
         <article class="card">
-          <h3>NAS · Daten, Web &amp; CI</h3>
+          <h3>NAS · Daten, Anmeldung, Web &amp; CI</h3>
           <ul class="tags">
-            <li>Proxmox</li><li>Debian</li><li>Nextcloud AIO</li><li>Syncthing</li><li>CouchDB</li><li>Ghost</li>
-            <li>Jenkins</li><li>SonarQube</li><li>node-exporter</li><li>cAdvisor</li>
+            <li>Proxmox</li><li>Debian</li><li>Authentik</li><li>PostgreSQL</li><li>Nextcloud AIO</li>
+            <li>Syncthing</li><li>CouchDB</li><li>Ghost</li><li>Jenkins</li><li>SonarQube</li>
+            <li>node-exporter</li><li>cAdvisor</li>
           </ul>
         </article>
       </div>
