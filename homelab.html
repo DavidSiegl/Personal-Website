@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Homelab — David Siegl</title>
-  <meta name="description" content="Architektur des Homelabs von David Siegl: zwei Knoten, Docker Compose, Traefik und CrowdSec am Rand, Single Sign-on mit Authentik, Deployment über Jenkins und Renovate, Monitoring mit Prometheus und Grafana.">
+  <meta name="description" content="Architektur des Homelabs von David Siegl: zwei Knoten, Docker Compose, Traefik und CrowdSec am Edge, Single Sign-on mit Authentik, Deployment über Jenkins und Renovate, Monitoring mit Prometheus und Grafana.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/favicon.png" sizes="96x96" type="image/png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -58,14 +58,14 @@
   <main>
     <section id="topologie" class="section">
       <h2>Topologie</h2>
-      <p class="section__lede">Ein kleiner Rand, ein großer Speicher.</p>
+      <p class="section__lede">Ein kleiner Edge-Knoten, ein großer Speicher.</p>
 
       <div class="prose">
         <p>
-          Die Arbeit ist auf zwei Geräte verteilt. Der <strong>Raspberry Pi</strong> ist der
-          Rand des Netzes: Nur er nimmt Verbindungen aus dem Internet an, terminiert TLS,
+          Der Workload ist auf zwei Geräte verteilt. Der <strong>Raspberry Pi</strong> ist der
+          Edge-Knoten: Nur er nimmt Verbindungen aus dem Internet an, terminiert TLS,
           entscheidet über Sperren und beobachtet alles andere. Das <strong>NAS</strong> trägt
-          die Last – Medien, Dateien, Bücher, Anmeldung, CI – und ist von außen nie direkt erreichbar.
+          die hauptsächliche Last – Medien, Dateien, Bücher, Anmeldung, CI – und ist von außen nie direkt erreichbar.
           Auf seiner Hardware läuft Proxmox als Hypervisor, die Docker-Dienste in einer
           schlichten Debian-VM darüber.
         </p>
@@ -79,7 +79,7 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 542" role="img" aria-labelledby="d1-title d1-desc">
             <title id="d1-title">Topologie des Homelabs</title>
-            <desc id="d1-desc">Anfragen aus dem Internet erreichen über den Router nur Traefik auf dem Raspberry Pi. Traefik fragt Docker über einen nur lesenden socket-proxy ab und tauscht sich mit CrowdSec aus. Von Traefik gehen die Anfragen über das Heimnetz an die Dienstgruppen auf dem NAS. Dort laufen sie in einer Debian-VM unter dem Hypervisor Proxmox: Anmeldung mit Authentik, Medien, Bücher, Daten, Blog und Notizen sowie CI/CD.</desc>
+            <desc id="d1-desc">Anfragen aus dem Internet erreichen über den Router Traefik auf dem Raspberry Pi. Traefik fragt Docker über einen rein lesenden socket-proxy ab und tauscht sich mit CrowdSec aus. Von Traefik gehen die Anfragen über das Heimnetz an die Dienstgruppen auf dem NAS. Dort laufen sie in einer Debian-VM unter dem Hypervisor Proxmox: Anmeldung mit Authentik, Medien, Bücher, Daten, Blog und Notizen sowie CI/CD.</desc>
 
             <rect class="d-zone" x="340" y="16" width="545" height="510" rx="18"/>
             <text class="d-zone-label" x="358" y="40">HEIMNETZ</text>
@@ -95,7 +95,7 @@
             <!-- Raspberry Pi -->
             <rect class="d-group" x="356" y="52" width="240" height="458" rx="14"/>
             <text class="d-group-title" x="372" y="78">Raspberry Pi</text>
-            <text class="d-sub" x="372" y="96">Rand · Sicherheit · Monitoring</text>
+            <text class="d-sub" x="372" y="96">Edge · Sicherheit · Monitoring</text>
 
             <rect class="d-box d-box--accent" x="372" y="112" width="208" height="58" rx="9"/>
             <text class="d-title" x="386" y="137">Traefik</text>
@@ -166,7 +166,7 @@
           </svg>
         </div>
         <figcaption>
-          Grün ist der Weg einer Anfrage von außen. Traefik liest Docker nur über den
+          Die grünen Pfeile beschreiben den Weg einer Anfrage von außen. Traefik liest Docker nur über den
           socket-proxy und bekommt seine Sperrliste von CrowdSec.
         </figcaption>
       </figure>
@@ -183,15 +183,15 @@
           Client selbst; jeder Router auf <code>:443</code> ist deshalb öffentlich, egal auf
           welchen Namen er hört. Grafana, Prometheus, Alertmanager und die Jenkins-Oberfläche
           liegen darum auf einem eigenen Entrypoint, <code>:8443</code>, den der Router
-          nicht weiterleitet – die Monitoring-Oberflächen zusätzlich hinter Basic Auth,
+          nicht weiterleitet – die Monitoring-Oberflächen liegen zusätzlich hinter Basic Auth,
           Jenkins hinter seinem eigenen Login.
         </p>
         <p>
-          Beide Sicherungen sind so gebaut, dass sie im Zweifel <em>schließen</em>: Der interne
-          Entrypoint ist der Standard, auf dem neue Router landen, wenn niemand etwas anderes
-          sagt. Und die CrowdSec-Middleware hängt am öffentlichen Entrypoint selbst statt an
-          einzelnen Routern – ein später hinzugefügter Dienst ist geschützt, ohne dass jemand
-          an ein Label denken muss.
+          Entrypoint-Trennung und CrowdSec greifen auch dann, wenn beim Anlegen eines Dienstes
+          niemand an sie denkt: Neue Router landen standardmäßig auf dem internen Entrypoint,
+          und die CrowdSec-Middleware hängt am öffentlichen Entrypoint selbst statt an
+          einzelnen Routern. Traefik stellt den IP-Bouncer somit jedem Router auf <code>:443</code> automatisch voran, ein
+          neuer Dienst braucht dafür kein eigenes Label.
         </p>
       </div>
 
@@ -263,19 +263,26 @@
         <article class="card">
           <h3>Kein Docker-Socket in Traefik</h3>
           <p class="card__text">
-            Traefik beantwortet das Internet und führt in jeder Anfrage ein Plugin aus. Mit
-            gemountetem Socket wäre Codeausführung dort gleich root auf dem Pi. Stattdessen
-            spricht es mit einem socket-proxy, der nur Container auflisten und Events lesen
-            darf – in einem Netz ohne Route nach draußen.
+            Traefik verabeitet jede Anfrage aus dem Internet und führt dabei den CrowdSec-Bouncer
+            als Plugin aus. Mit eingebundenem Docker-Socket käme jede Lücke, die dort
+            Codeausführung erlaubt, root-Rechten auf dem Pi gleich. Stattdessen fragt Traefik
+            einen socket-proxy ab, der nur Container auflisten und Events lesen darf und in
+            einem internen Docker-Netz ohne Verbindung nach außen läuft.
           </p>
         </article>
         <article class="card">
-          <h3>CrowdSec, erst geprobt</h3>
+          <h3>Sperren aus dem Access-Log</h3>
           <p class="card__text">
             CrowdSec liest Traefiks JSON-Access-Log, ein Bouncer-Plugin in Traefik setzt die
-            Sperren durch. Scharf geschaltet habe ich es erst, nachdem zwei Wochen Log
-            (rund 710 000 Zeilen) durch dieselben Szenarien gelaufen waren: 271 Sperren, alle
-            auf Cloud- und Hosting-Netzen, kein einziger echter Client.
+            Sperren durch. Im Log zählt CrowdSec für jede IP verdächtige Anfragen, etwa
+            gehäufte 404 auf Pfade wie <code>/wp-login.php</code> oder <code>/.env</code>;
+            überschreitet eine IP die Schwelle eines Szenarios, legt CrowdSec eine zeitlich
+            begrenzte Sperre an. Dazu kommt eine Community-Blockliste: Jede Installation meldet,
+            welche IP welches Szenario ausgelöst hat, und auf die Liste kommt eine IP erst,
+            wenn viele voneinander unabhängige Installationen sie gemeldet haben. So sind
+            bekannte Angreifer gesperrt, bevor sie hier ihre erste Anfrage stellen. Der Bouncer
+            gleicht jede Anfrage mit beiden Listen ab und weist gesperrte IPs mit 403 ab,
+            bevor sie einen Dienst erreichen.
           </p>
         </article>
         <article class="card">
@@ -323,10 +330,12 @@
         <article class="card">
           <h3>Kein Socket im Worker</h3>
           <p class="card__text">
-            Die Compose-Datei von upstream gibt dem Worker den Docker-Socket, damit er
-            Outposts selbst starten kann – Codeausführung dort wäre root auf dem NAS. Hier
-            ist der LDAP-Outpost ein gewöhnlicher Compose-Dienst, und die Datenbank sitzt in
-            einem Netz ohne Route nach draußen.
+            Authentiks offizielle Compose-Datei gibt dem Worker den Docker-Socket, damit er
+            Outposts selbst starten kann. Damit käme jede Lücke, die im Worker Codeausführung
+            erlaubt, root-Rechten in der Docker-VM gleich. Hier läuft der LDAP-Outpost
+            stattdessen als gewöhnlicher Compose-Dienst, der Worker braucht den Socket also
+            nicht. Die Datenbank liegt zusätzlich in einem internen Docker-Netz ohne
+            Verbindung nach außen.
           </p>
         </article>
         <article class="card">
@@ -352,7 +361,7 @@
           Compose-Dateien, spiegelt das Repository per rsync auf beide Knoten, schreibt die
           Secrets aus den Jenkins-Credentials in <code>.env</code>-Dateien und rollt nur die
           Stacks neu aus, deren Verzeichnis sich geändert hat. Danach prüft ein Skript, dass
-          jeder Container läuft, gesund ist und nicht in einer Neustart-Schleife hängt.
+          jeder Container läuft, gesund ist und nicht in einem Crash-Loop hängt.
         </p>
         <p>
           „Geändert“ heißt dabei: seit dem letzten <em>erfolgreichen</em> Build, nicht seit
@@ -456,8 +465,8 @@
             Jedes Image ist auf eine Version festgelegt, damit Git immer sagt, was läuft.
             Minor-, Patch- und Digest-Updates committet Renovate nachts gesammelt direkt auf
             <code>main</code>; Major-Updates kommen als Pull Request. Releases, die jünger als
-            drei Tage sind, bleiben liegen – was am ersten Tag zurückgezogen wird, erreicht
-            die Knoten nie.
+            drei Tage sind, bleiben liegen – somit erreichen vorschnelle Commits upstream, die später doch wieder zurückgezogen werden,
+            die Knoten downstream nie.
           </p>
         </article>
         <article class="card">
@@ -466,7 +475,7 @@
             Ein Job kann den Controller, auf dem er läuft, nicht neu starten. Er übergibt
             deshalb zuletzt an ein Skript auf dem NAS: Jenkins stoppen, <code>jenkins_home</code>
             sichern, neue Images umtaggen, starten und prüfen – Login, Plugins, beide Agents.
-            Scheitert ein Punkt, rollt das Skript selbstständig zurück.
+            Scheitert ein Step, rollt das Skript selbstständig zurück.
           </p>
         </article>
         <article class="card">
@@ -474,8 +483,7 @@
           <p class="card__text">
             Die komplette Plugin-Liste des Controllers steht versioniert im Repository, und
             Renovate hebt sie in einem Commit an – Plugins geben Mindestversionen
-            voneinander an. Ein Test mit einer echten Plugin-Erhöhung hat gezeigt, dass das
-            ohne eine bestimmte Entrypoint-Variable stillschweigend nichts bewirkt.
+            voneinander an.
           </p>
         </article>
       </div>
