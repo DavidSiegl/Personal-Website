@@ -501,7 +501,7 @@
           nicht an der VM – dort läuft deshalb ein eigener node-exporter für
           Laufwerkstemperaturen, Pool-Zustand, Prüfsummenfehler und das Alter des letzten
           Scrubs. Der blackbox-exporter ruft die öffentlichen URLs von außen ab und fängt
-          damit, was ein gesunder Container nicht verrät – eine kaputte Route oder ein
+          damit ab, was ein gesunder Container nicht verrät – eine kaputte Route oder ein
           abgelaufenes Zertifikat. Selbst der Jenkins-Webhook wird geprüft: Die Probe erwartet
           Jenkins' eigenes <code>405</code>, denn eine Route, die nicht mehr passt, würde
           Traefik mit <code>404</code> beantworten.
@@ -579,8 +579,7 @@
         </div>
         <figcaption>
           Alles läuft über Prometheus. Die Steckdosen liest ein json-exporter aus der
-          HTTP-API, die sie ohnehin anbieten – eigene Firmware nach jedem OTA-Update wäre
-          die Alternative gewesen. Derselbe Exporter holt Nutzer- und Sitzungszahlen mit
+          HTTP-API, die sie ohnehin anbieten. Derselbe Exporter holt Nutzer- und Sitzungszahlen mit
           einem nur lesenden Token aus der Authentik-API.
         </figcaption>
       </figure>
