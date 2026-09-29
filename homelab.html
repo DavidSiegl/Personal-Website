@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Homelab — David Siegl</title>
-  <meta name="description" content="Architektur des Homelabs von David Siegl: zwei Knoten, Docker Compose, Traefik und CrowdSec am Edge, Single Sign-on mit Authentik, Deployment über Jenkins und Renovate, Monitoring mit Prometheus und Grafana.">
+  <meta name="description" content="Architektur des Homelabs von David Siegl: drei Knoten, Proxmox-Cluster mit eigener Agent-Box für Claude Code, Docker Compose, Traefik und CrowdSec am Edge, Single Sign-on mit Authentik, Deployment über Jenkins und Renovate, Monitoring mit Prometheus und Grafana.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/favicon.png" sizes="96x96" type="image/png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -38,8 +38,8 @@
     <h1>Homelab</h1>
     <p class="bio">
       Zu Hause betreibe ich im Kleinen, was ich beruflich im Großen mache: Dienste, die
-      reproduzierbar ausgerollt, überwacht und abgesichert werden. Zwei Knoten, alles in
-      Docker Compose, alles in Git – kein Container läuft, der nicht in einem Commit steht.
+      reproduzierbar ausgerollt, überwacht und abgesichert werden. Drei Knoten, die Dienste
+      alle in Docker Compose und in Git – kein Container läuft, der nicht in einem Commit steht.
     </p>
     <p class="bio">
       Diese Seite zeigt, wie die Teile zusammenhängen, und vor allem, <em>warum</em> sie so
@@ -48,7 +48,7 @@
     </p>
 
     <dl class="stats">
-      <div><dt>Knoten</dt><dd>2</dd></div>
+      <div><dt>Knoten</dt><dd>3</dd></div>
       <div><dt>Compose-Stacks</dt><dd>19</dd></div>
       <div><dt>Öffentliche Router</dt><dd>10</dd></div>
       <div><dt>Dashboards</dt><dd>6</dd></div>
@@ -58,16 +58,34 @@
   <main>
     <section id="topologie" class="section">
       <h2>Topologie</h2>
-      <p class="section__lede">Ein kleiner Edge-Knoten, ein großer Speicher.</p>
+      <p class="section__lede">Ein kleiner Edge-Knoten, ein großer Speicher, eine Box für Agents.</p>
 
       <div class="prose">
         <p>
-          Der Workload ist auf zwei Geräte verteilt. Der <strong>Raspberry Pi</strong> ist der
+          Der Workload ist auf drei Geräte verteilt. Der <strong>Raspberry Pi</strong> ist der
           Edge-Knoten: Nur er nimmt Verbindungen aus dem Internet an, terminiert TLS,
           entscheidet über Sperren und beobachtet alles andere. Das <strong>NAS</strong> trägt
           die hauptsächliche Last – Medien, Dateien, Bücher, Anmeldung, CI – und ist von außen nie direkt erreichbar.
           Auf seiner Hardware läuft Proxmox als Hypervisor, die Docker-Dienste in einer
           schlichten Debian-VM darüber.
+        </p>
+        <p>
+          Der dritte Knoten, die <strong>Agent-Box</strong>, ist ein zweiter Proxmox-Host mit
+          einer VM, in der Claude-Code-Sessions arbeiten. Sie steht bewusst nicht als weitere
+          VM auf dem NAS: Ein Agent mit Shell führt Befehle aus, die niemand vorher gelesen hat.
+          Läuft einer aus dem Ruder – füllt die Platte, frisst Speicher, löscht das Falsche –,
+          trifft es auf eigener Hardware nur seine VM, nicht den Pool mit den Daten und nicht
+          die Dienste daneben. Gesteuert werden die Sessions mit <strong>herdr</strong>, einem
+          Terminal-Workspace für Coding-Agents: Sie laufen in der VM, und ich hänge mich vom
+          Desktop aus an und wieder ab.
+        </p>
+        <p>
+          NAS und Agent-Box bilden einen Proxmox-Cluster mit einer gemeinsamen Oberfläche. Zwei
+          Knoten allein haben dabei ein Quorum-Problem: Fällt einer aus, fehlt dem anderen die
+          Mehrheit, und Proxmox sperrt die Cluster-Konfiguration – VMs lassen sich dann weder
+          starten noch ändern. Der Pi gibt deshalb als QDevice die dritte Stimme ab. Dafür
+          braucht er nur <code>corosync-qnetd</code>, keinen Proxmox, und jeder der beiden
+          Hosts bleibt allein handlungsfähig.
         </p>
         <p>
           Der Router leitet genau zwei Ports weiter, 80 und 443, beide auf Traefik. Von dort
@@ -77,11 +95,11 @@
 
       <figure class="diagram">
         <div class="diagram__scroll">
-          <svg viewBox="0 0 900 542" role="img" aria-labelledby="d1-title d1-desc">
+          <svg viewBox="0 0 900 692" role="img" aria-labelledby="d1-title d1-desc">
             <title id="d1-title">Topologie des Homelabs</title>
-            <desc id="d1-desc">Anfragen aus dem Internet erreichen über den Router Traefik auf dem Raspberry Pi. Traefik fragt Docker über einen rein lesenden socket-proxy ab und tauscht sich mit CrowdSec aus. Von Traefik gehen die Anfragen über das Heimnetz an die Dienstgruppen auf dem NAS. Dort laufen sie in einer Debian-VM unter dem Hypervisor Proxmox: Anmeldung mit Authentik, Medien, Bücher, Daten, Blog und Notizen sowie CI/CD.</desc>
+            <desc id="d1-desc">Anfragen aus dem Internet erreichen über den Router Traefik auf dem Raspberry Pi. Traefik fragt Docker über einen rein lesenden socket-proxy ab und tauscht sich mit CrowdSec aus. Von Traefik gehen die Anfragen über das Heimnetz an die Dienstgruppen auf dem NAS. Dort laufen sie in einer Debian-VM unter dem Hypervisor Proxmox: Anmeldung mit Authentik, Medien, Bücher, Daten, Blog und Notizen sowie CI/CD. Unter dem NAS steht die Agent-Box, ein zweiter Proxmox-Host mit der VM ai-agents für Claude-Code-Sessions, gesteuert mit herdr. NAS und Agent-Box bilden einen Proxmox-Cluster, dem der Raspberry Pi als QDevice mit corosync-qnetd die dritte Stimme gibt.</desc>
 
-            <rect class="d-zone" x="340" y="16" width="545" height="510" rx="18"/>
+            <rect class="d-zone" x="340" y="16" width="545" height="660" rx="18"/>
             <text class="d-zone-label" x="358" y="40">HEIMNETZ</text>
 
             <rect class="d-box" x="16" y="109" width="124" height="64" rx="10"/>
@@ -93,7 +111,7 @@
             <text class="d-sub" x="238" y="155" text-anchor="middle">nur 80 · 443</text>
 
             <!-- Raspberry Pi -->
-            <rect class="d-group" x="356" y="52" width="240" height="458" rx="14"/>
+            <rect class="d-group" x="356" y="52" width="240" height="608" rx="14"/>
             <text class="d-group-title" x="372" y="78">Raspberry Pi</text>
             <text class="d-sub" x="372" y="96">Edge · Sicherheit · Monitoring</text>
 
@@ -117,6 +135,10 @@
             <text class="d-title" x="386" y="441">Exporter</text>
             <text class="d-sub" x="386" y="459">node-exporter · cAdvisor</text>
 
+            <rect class="d-box" x="372" y="586" width="208" height="58" rx="9"/>
+            <text class="d-title" x="386" y="611">QDevice</text>
+            <text class="d-sub" x="386" y="629">corosync-qnetd · 3. Stimme</text>
+
             <!-- NAS -->
             <rect class="d-group" x="620" y="52" width="249" height="458" rx="14"/>
             <text class="d-group-title" x="636" y="78">NAS <tspan class="d-mono">· Proxmox</tspan></text>
@@ -130,7 +152,7 @@
 
             <rect class="d-box" x="636" y="178" width="217" height="58" rx="9"/>
             <text class="d-title" x="650" y="203">Medien</text>
-            <text class="d-sub" x="650" y="221">Jellyfin · Jellyseerr · *arr</text>
+            <text class="d-sub" x="650" y="221">Jellyfin · Seerr · *arr</text>
 
             <rect class="d-box" x="636" y="244" width="217" height="58" rx="9"/>
             <text class="d-title" x="650" y="269">Bücher</text>
@@ -147,6 +169,20 @@
             <rect class="d-box" x="636" y="442" width="217" height="58" rx="9"/>
             <text class="d-title" x="650" y="467">CI/CD</text>
             <text class="d-sub" x="650" y="485">Jenkins · SonarQube</text>
+
+            <!-- Agent-Box: same inner layout as the NAS group, one box -->
+            <rect class="d-group" x="620" y="526" width="249" height="134" rx="14"/>
+            <text class="d-group-title" x="636" y="552">Agent-Box <tspan class="d-mono">· Proxmox</tspan></text>
+            <text class="d-sub" x="636" y="570">VM ai-agents</text>
+            <rect class="d-vm" x="628" y="578" width="233" height="74" rx="11"/>
+
+            <rect class="d-box" x="636" y="586" width="217" height="58" rx="9"/>
+            <text class="d-title" x="650" y="611">Claude Code</text>
+            <text class="d-sub" x="650" y="629">Sessions in herdr</text>
+
+            <!-- Cluster: NAS and Agent-Box joined, the Pi's vote feeding into the join -->
+            <path class="d-edge" d="M744 510 V526"/>
+            <path class="d-edge" d="M580 615 H600 V518 H738" marker-end="url(#arrow)"/>
 
             <!-- Request path -->
             <path class="d-edge d-edge--accent" d="M140 141 H176" marker-end="url(#arrow-accent)"/>
@@ -167,7 +203,8 @@
         </div>
         <figcaption>
           Die grünen Pfeile beschreiben den Weg einer Anfrage von außen. Traefik liest Docker nur über den
-          socket-proxy und bekommt seine Sperrliste von CrowdSec.
+          socket-proxy und bekommt seine Sperrliste von CrowdSec. Unten gibt der Pi die
+          dritte Stimme im Proxmox-Cluster aus NAS und Agent-Box ab.
         </figcaption>
       </figure>
     </section>
@@ -288,8 +325,8 @@
         <article class="card">
           <h3>Jenkins nur als Webhook</h3>
           <p class="card__text">
-            Jenkins hält den SSH-Schlüssel für beide Knoten – wer Jenkins kontrolliert, ist
-            root im ganzen Homelab. Öffentlich ist deshalb genau ein Pfad, der GitHub-Webhook.
+            Jenkins hält den SSH-Schlüssel für Pi und NAS – wer Jenkins kontrolliert, ist
+            root auf beiden. Öffentlich ist deshalb genau ein Pfad, der GitHub-Webhook.
             Alles andere auf diesem Host beantwortet Traefik mit 404, bevor es Jenkins
             erreicht.
           </p>
@@ -358,7 +395,7 @@
         <p>
           Jeder Dienst ist ein Verzeichnis mit einer Compose-Datei. Ein Push auf
           <code>main</code> löst über den Webhook die Pipeline aus: Sie prüft alle
-          Compose-Dateien, spiegelt das Repository per rsync auf beide Knoten, schreibt die
+          Compose-Dateien, spiegelt das Repository per rsync auf Pi und NAS, schreibt die
           Secrets aus den Jenkins-Credentials in <code>.env</code>-Dateien und rollt nur die
           Stacks neu aus, deren Verzeichnis sich geändert hat. Danach prüft ein Skript, dass
           jeder Container läuft, gesund ist und nicht in einem Crash-Loop hängt.
@@ -495,12 +532,14 @@
 
       <div class="prose">
         <p>
-          Prometheus, Grafana und Alertmanager laufen auf dem Pi und beobachten beide Knoten:
+          Prometheus, Grafana und Alertmanager laufen auf dem Pi und beobachten alle drei Knoten:
           node-exporter für den Host, cAdvisor für die Container, dazu die eigenen Metriken
           von Traefik und Authentik. Die Festplatten und ZFS-Pools hängen am Proxmox-Host,
           nicht an der VM – dort läuft deshalb ein eigener node-exporter für
           Laufwerkstemperaturen, Pool-Zustand, Prüfsummenfehler und das Alter des letzten
-          Scrubs. Der blackbox-exporter ruft die öffentlichen URLs von außen ab und fängt
+          Scrubs. Die Agent-Box bekommt denselben Exporter; sie hat keine NAS-Platten, nur
+          ihren Systempool, dessen Zustand derselbe Pool-Alarm abdeckt. Der blackbox-exporter
+          ruft die öffentlichen URLs von außen ab und fängt
           damit ab, was ein gesunder Container nicht verrät – eine kaputte Route oder ein
           abgelaufenes Zertifikat. Selbst der Jenkins-Webhook wird geprüft: Die Probe erwartet
           Jenkins' eigenes <code>405</code>, denn eine Route, die nicht mehr passt, würde
@@ -517,7 +556,7 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 540" role="img" aria-labelledby="d4-title d4-desc">
             <title id="d4-title">Monitoring-Datenfluss</title>
-            <desc id="d4-desc">Prometheus auf dem Raspberry Pi sammelt Metriken von acht Quellen: node-exporter und cAdvisor in der NAS-VM und auf dem Pi, node-exporter mit ZFS- und Laufwerksmetriken auf dem Proxmox-Host, Traefik, CrowdSec, Authentik, dem blackbox-exporter, der die öffentlichen URLs prüft, und dem json-exporter, der zwei Tasmota-Steckdosen und die Authentik-API abfragt. Grafana zeigt die Daten in sechs Dashboards, Alertmanager verschickt Alarme per E-Mail.</desc>
+            <desc id="d4-desc">Prometheus auf dem Raspberry Pi sammelt Metriken von acht Quellen: node-exporter und cAdvisor in der NAS-VM und auf dem Pi, node-exporter mit ZFS- und Laufwerksmetriken auf den beiden Proxmox-Hosts, Traefik, CrowdSec, Authentik, dem blackbox-exporter, der die öffentlichen URLs prüft, und dem json-exporter, der zwei Tasmota-Steckdosen und die Authentik-API abfragt. Grafana zeigt die Daten in sechs Dashboards, Alertmanager verschickt Alarme per E-Mail.</desc>
 
             <!-- Sources: y = 24 + i * 64 -->
             <rect class="d-box" x="16" y="24" width="240" height="52" rx="9"/>
@@ -525,7 +564,7 @@
             <text class="d-sub" x="30" y="64">node-exporter · cAdvisor</text>
 
             <rect class="d-box" x="16" y="88" width="240" height="52" rx="9"/>
-            <text class="d-title" x="30" y="110">Proxmox-Host</text>
+            <text class="d-title" x="30" y="110">Proxmox-Hosts</text>
             <text class="d-sub" x="30" y="128">node-exporter · ZFS · Laufwerke</text>
 
             <rect class="d-box" x="16" y="152" width="240" height="52" rx="9"/>
@@ -616,7 +655,7 @@
 
     <section id="dienste" class="section section--alt">
       <h2>Dienste</h2>
-      <p class="section__lede">Was auf den beiden Knoten läuft.</p>
+      <p class="section__lede">Was auf den drei Knoten läuft.</p>
 
       <div class="grid">
         <article class="card">
@@ -624,22 +663,28 @@
           <ul class="tags">
             <li>Traefik</li><li>socket-proxy</li><li>CrowdSec</li><li>Prometheus</li>
             <li>Grafana</li><li>Alertmanager</li><li>blackbox-exporter</li><li>json-exporter</li>
-            <li>node-exporter</li><li>cAdvisor</li>
+            <li>node-exporter</li><li>cAdvisor</li><li>corosync-qnetd</li>
           </ul>
         </article>
         <article class="card">
           <h3>NAS · Medien &amp; Bücher</h3>
           <ul class="tags">
-            <li>Jellyfin</li><li>Jellyseerr</li><li>Radarr</li><li>Sonarr</li><li>Prowlarr</li>
-            <li>qBittorrent</li><li>Calibre-Web</li><li>Audiobookshelf</li><li>Shelfmark</li>
+            <li>Jellyfin</li><li>Seerr</li><li>Radarr</li><li>Sonarr</li><li>Prowlarr</li>
+            <li>qBittorrent</li><li>Calibre-Web Automated</li><li>Audiobookshelf</li><li>Shelfmark</li>
           </ul>
         </article>
         <article class="card">
           <h3>NAS · Daten, Anmeldung, Web &amp; CI</h3>
           <ul class="tags">
-            <li>Proxmox</li><li>Debian</li><li>Authentik</li><li>PostgreSQL</li><li>Nextcloud AIO</li>
+            <li>Proxmox</li><li>Debian</li><li>Authentik</li><li>PostgreSQL</li><li>MySQL</li><li>Nextcloud AIO</li>
             <li>Syncthing</li><li>CouchDB</li><li>Ghost</li><li>Jenkins</li><li>SonarQube</li>
             <li>node-exporter</li><li>cAdvisor</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Agent-Box</h3>
+          <ul class="tags">
+            <li>Proxmox</li><li>Claude Code</li><li>herdr</li><li>node-exporter</li>
           </ul>
         </article>
       </div>
