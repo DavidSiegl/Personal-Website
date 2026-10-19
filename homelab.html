@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Homelab — David Siegl</title>
-  <meta name="description" content="Architektur des Homelabs von David Siegl: drei Knoten, Proxmox-Cluster mit eigener Agent-Box für Claude Code, Docker Compose, Traefik und CrowdSec am Edge, Single Sign-on mit Authentik, Deployment über Jenkins und Renovate, Monitoring mit Prometheus und Grafana.">
+  <meta name="description" content="Architektur des Homelabs von David Siegl: drei Knoten, Proxmox-Cluster mit eigener Agent-Box für Claude Code und pi, Docker Compose, Traefik und CrowdSec am Edge, Single Sign-on mit Authentik, Deployment über Jenkins und Renovate, Monitoring mit Prometheus und Grafana.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/favicon.png" sizes="96x96" type="image/png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -71,7 +71,7 @@
         </p>
         <p>
           Der dritte Knoten, die <strong>Agent-Box</strong>, ist ein zweiter Proxmox-Host mit
-          einer VM, in der Claude-Code-Sessions arbeiten. Sie steht bewusst nicht als weitere
+          einer VM, in der Coding-Agents arbeiten – Claude Code und pi. Sie steht bewusst nicht als weitere
           VM auf dem NAS: Ein Agent mit Shell führt Befehle aus, die niemand vorher gelesen hat.
           Läuft einer aus dem Ruder – füllt die Platte, frisst Speicher, löscht das Falsche –,
           trifft es auf eigener Hardware nur seine VM, nicht den Pool mit den Daten und nicht
@@ -98,7 +98,7 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 692" role="img" aria-labelledby="d1-title d1-desc">
             <title id="d1-title">Topologie des Homelabs</title>
-            <desc id="d1-desc">Anfragen aus dem Internet erreichen über den Router Traefik auf dem Raspberry Pi. Traefik fragt Docker über einen rein lesenden socket-proxy ab und tauscht sich mit CrowdSec aus. Von Traefik gehen die Anfragen über das Heimnetz an die Dienstgruppen auf dem NAS. Dort laufen sie in einer Debian-VM unter dem Hypervisor Proxmox: Anmeldung mit Authentik, Medien, Bücher, Daten, Blog und Notizen sowie CI/CD. Unter dem NAS steht die Agent-Box, ein zweiter Proxmox-Host mit der VM agentbox0 für Claude-Code-Sessions, gesteuert mit herdr. NAS und Agent-Box bilden einen Proxmox-Cluster, dem der Raspberry Pi als QDevice mit corosync-qnetd die dritte Stimme gibt.</desc>
+            <desc id="d1-desc">Anfragen aus dem Internet erreichen über den Router Traefik auf dem Raspberry Pi. Traefik fragt Docker über einen rein lesenden socket-proxy ab und tauscht sich mit CrowdSec aus. Von Traefik gehen die Anfragen über das Heimnetz an die Dienstgruppen auf dem NAS. Dort laufen sie in einer Debian-VM unter dem Hypervisor Proxmox: Anmeldung mit Authentik, Medien, Bücher, Daten, Blog und Notizen sowie CI/CD. Unter dem NAS steht die Agent-Box, ein zweiter Proxmox-Host mit der VM agentbox0 für Sessions von Claude Code und pi, gesteuert mit herdr. NAS und Agent-Box bilden einen Proxmox-Cluster, dem der Raspberry Pi als QDevice mit corosync-qnetd die dritte Stimme gibt.</desc>
 
             <rect class="d-zone" x="340" y="16" width="545" height="660" rx="18"/>
             <text class="d-zone-label" x="358" y="40">HEIMNETZ</text>
@@ -178,7 +178,7 @@
             <rect class="d-vm" x="628" y="578" width="233" height="74" rx="11"/>
 
             <rect class="d-box" x="636" y="586" width="217" height="58" rx="9"/>
-            <text class="d-title" x="650" y="611">Claude Code</text>
+            <text class="d-title" x="650" y="611">Claude Code · pi</text>
             <text class="d-sub" x="650" y="629">Sessions in herdr</text>
 
             <!-- Cluster: NAS and Agent-Box joined, the Pi's vote feeding into the join -->
@@ -541,8 +541,11 @@
           prüft das Ergebnis in einer frischen Sitzung gegen die Spezifikation und schickt es
           bei Bedarf zurück. Jede Rolle ist eine eigene Agent-Sitzung in einem herdr-Pane:
           Keine bewertet ihre eigene Arbeit, und ich kann jeder zusehen oder eingreifen. Die
-          Rollen müssen nicht einmal dasselbe Modell nutzen – schreibt Claude Code, kann Codex
-          prüfen, damit das Review nicht dieselben blinden Flecken hat wie der Code.
+          Rollen müssen nicht einmal im selben Harness laufen: Neben Claude Code läuft auf der
+          Box <a href="https://github.com/badlogic/pi-mono" target="_blank" rel="noopener noreferrer">pi</a>,
+          ein schlanker Coding-Agent, der die Modelle beliebiger Anbieter anspricht. Schreibt
+          Claude Code, kann pi mit dem Modell eines anderen Anbieters prüfen, damit das Review
+          nicht dieselben blinden Flecken hat wie der Code.
         </p>
         <p>
           Auf Wunsch sitzt zwischen Builder und Reviewer ein Quality Gate: Der Orchestrator
@@ -570,7 +573,7 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 386" role="img" aria-labelledby="d5-title d5-desc">
             <title id="d5-title">Agent-Box und ihre Grenzen</title>
-            <desc id="d5-desc">In der VM agentbox0 auf der Agent-Box laufen die Rollen des ai-agents-orchestrator als getrennte Sitzungen in einem herdr-Workspace: Spec Collector, Builder und Reviewer, der Änderungen an den Builder zurückschicken kann. Daneben laufen ein Jenkins-Agent für die Builds der Agents als eingeschränkter Container und der Nutzer agent ohne docker-Gruppe. Die Firewall auf der Bridge des Proxmox-Hosts lässt die VM ins Internet, im Heimnetz nur zu Jenkins auf Port 8084 und SonarQube auf Port 9001 auf dem NAS sowie zum DNS des Routers. Das restliche Heimnetz – Proxmox-Hosts, Raspberry Pi, Router-Oberfläche und SSH zum NAS – wird verworfen.</desc>
+            <desc id="d5-desc">In der VM agentbox0 auf der Agent-Box laufen die Rollen des ai-agents-orchestrator als getrennte Sitzungen von Claude Code oder pi in einem herdr-Workspace: Spec Collector, Builder und Reviewer, der Änderungen an den Builder zurückschicken kann. Daneben laufen ein Jenkins-Agent für die Builds der Agents als eingeschränkter Container und der Nutzer agent ohne docker-Gruppe. Die Firewall auf der Bridge des Proxmox-Hosts lässt die VM ins Internet, im Heimnetz nur zu Jenkins auf Port 8084 und SonarQube auf Port 9001 auf dem NAS sowie zum DNS des Routers. Das restliche Heimnetz – Proxmox-Hosts, Raspberry Pi, Router-Oberfläche und SSH zum NAS – wird verworfen.</desc>
 
             <rect class="d-group" x="16" y="20" width="470" height="346" rx="14"/>
             <text class="d-group-title" x="32" y="46">Agent-Box <tspan class="d-mono">· Proxmox</tspan></text>
@@ -578,7 +581,7 @@
             <rect class="d-vm" x="24" y="76" width="454" height="282" rx="11"/>
 
             <rect class="d-box" x="36" y="88" width="430" height="176" rx="9"/>
-            <text class="d-title" x="50" y="112">herdr-Workspace</text>
+            <text class="d-title" x="50" y="112">herdr-Workspace <tspan class="d-mono">· Claude Code · pi</tspan></text>
             <text class="d-sub" x="50" y="130">Spec → Build → Review → Pull Request</text>
 
             <!-- Roles: x = 50 + i * 142 -->
@@ -832,7 +835,7 @@
         <article class="card">
           <h3>Agent-Box</h3>
           <ul class="tags">
-            <li>Proxmox</li><li>Claude Code</li><li>herdr</li><li>ai-agents-orchestrator</li>
+            <li>Proxmox</li><li>Claude Code</li><li>pi</li><li>herdr</li><li>ai-agents-orchestrator</li>
             <li>Docker</li><li>Jenkins-Agent</li><li>node-exporter</li>
           </ul>
         </article>
