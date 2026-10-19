@@ -1022,6 +1022,7 @@ a.cert__title::after {
 
 .d-edge { fill: none; stroke: var(--text-muted); stroke-width: 1.4; }
 .d-edge--accent { stroke: var(--accent); stroke-width: 2; }
+.d-edge--blocked { stroke-dasharray: 4 4; }
 
 .d-head { fill: var(--text-muted); }
 .d-head--accent { fill: var(--accent); }
