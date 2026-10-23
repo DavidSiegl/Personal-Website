@@ -23,7 +23,7 @@ GROUPS = [
      ["The C Programming Language", "The Practice of Programming", "The Pragmatic Programmer",
       "Think Like a Programmer", "The Art of Clean Code", "Learning Go", "Practical Vim",
       "Mastering Regular Expressions", "Classic Shell Scripting", "Fluent Python",
-      "A Philosophy of Software Design"]),
+      "A Philosophy of Software Design", "Fundamentals of Software Architecture"]),
     ("Grundlagen & Systeme",
      "Was unter der Abstraktion liegt: vom Logikgatter bis zum laufenden Linux-System.",
      ["Code", "How Computers Really Work", "How Linux Works", "Algorithms to Live By"]),
