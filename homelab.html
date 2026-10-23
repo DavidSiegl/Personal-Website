@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Homelab — David Siegl</title>
-  <meta name="description" content="Architektur des Homelabs von David Siegl: drei Knoten, Proxmox-Cluster mit eigener Agent-Box für Claude Code und pi, Docker Compose, Traefik und CrowdSec am Edge, Single Sign-on mit Authentik, Deployment über Jenkins und Renovate, Monitoring mit Prometheus und Grafana.">
+  <meta name="description" content="Architektur des Homelabs von David Siegl: drei Knoten, Proxmox-Cluster mit eigener CI-VM und Agent-Box für Claude Code und pi, Docker Compose, Traefik und CrowdSec am Edge, Single Sign-on mit Authentik, Deployment über Jenkins, MegaLinter und Renovate, Monitoring mit Prometheus und Grafana.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/favicon.png" sizes="96x96" type="image/png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -65,9 +65,18 @@
           Der Workload ist auf drei Geräte verteilt. Der <strong>Raspberry Pi</strong> ist der
           Edge-Knoten: Nur er nimmt Verbindungen aus dem Internet an, terminiert TLS,
           entscheidet über Sperren und beobachtet alles andere. Das <strong>NAS</strong> trägt
-          die hauptsächliche Last – Medien, Dateien, Bücher, Anmeldung, CI – und ist von außen nie direkt erreichbar.
+          die hauptsächliche Last – Medien, Dateien, Bücher, Anmeldung – und ist von außen nie direkt erreichbar.
           Auf seiner Hardware läuft Proxmox als Hypervisor, die Docker-Dienste in einer
           schlichten Debian-VM darüber.
+        </p>
+        <p>
+          Jenkins läuft daneben in einer eigenen VM, <strong>cicdbox0</strong>. Es hält den
+          Deploy-Schlüssel, der auf jedem Host root ist, und teilt sich deshalb keine VM mit
+          Diensten, die Anfragen aus dem Internet beantworten. Die Firewall von Proxmox lässt
+          nur herein, was die VM wirklich braucht: die Jenkins-Oberfläche aus dem LAN, SSH vom
+          Laptop und die Scrapes vom Pi. Ihre Platte liegt nicht auf dem Datenpool des NAS,
+          sondern auf dem Systempool des Hosts – so kann die VM bei Bedarf auf den anderen
+          Knoten des Clusters umziehen.
         </p>
         <p>
           Der dritte Knoten, die <strong>Agent-Box</strong>, ist ein zweiter Proxmox-Host mit
@@ -90,17 +99,18 @@
         </p>
         <p>
           Der Router leitet genau zwei Ports weiter, 80 und 443, beide auf Traefik. Von dort
-          gehen Anfragen über das LAN an die Dienste auf dem NAS.
+          gehen Anfragen über das LAN an die Dienste auf dem NAS und, für den GitHub-Webhook,
+          an Jenkins auf cicdbox0.
         </p>
       </div>
 
       <figure class="diagram">
         <div class="diagram__scroll">
-          <svg viewBox="0 0 900 692" role="img" aria-labelledby="d1-title d1-desc">
+          <svg viewBox="0 0 900 714" role="img" aria-labelledby="d1-title d1-desc">
             <title id="d1-title">Topologie des Homelabs</title>
-            <desc id="d1-desc">Anfragen aus dem Internet erreichen über den Router Traefik auf dem Raspberry Pi. Traefik fragt Docker über einen rein lesenden socket-proxy ab und tauscht sich mit CrowdSec aus. Von Traefik gehen die Anfragen über das Heimnetz an die Dienstgruppen auf dem NAS. Dort laufen sie in einer Debian-VM unter dem Hypervisor Proxmox: Anmeldung mit Authentik, Medien, Bücher, Daten, Blog und Notizen sowie CI/CD. Unter dem NAS steht die Agent-Box, ein zweiter Proxmox-Host mit der VM agentbox0 für Sessions von Claude Code und pi, gesteuert mit herdr. NAS und Agent-Box bilden einen Proxmox-Cluster, dem der Raspberry Pi als QDevice mit corosync-qnetd die dritte Stimme gibt.</desc>
+            <desc id="d1-desc">Anfragen aus dem Internet erreichen über den Router Traefik auf dem Raspberry Pi. Traefik fragt Docker über einen rein lesenden socket-proxy ab und tauscht sich mit CrowdSec aus. Von Traefik gehen die Anfragen über das Heimnetz an die Dienstgruppen auf dem NAS. Dort laufen sie in einer Debian-VM unter dem Hypervisor Proxmox: Anmeldung mit Authentik, Medien, Bücher, Daten sowie Blog und Notizen. In einer zweiten VM auf dem NAS, cicdbox0, läuft Jenkins mit dem Lint-Agent lint0; Traefik leitet nur den GitHub-Webhook dorthin weiter. Unter dem NAS steht die Agent-Box, ein zweiter Proxmox-Host mit der VM agentbox0 für Sessions von Claude Code und pi, gesteuert mit herdr. NAS und Agent-Box bilden einen Proxmox-Cluster, dem der Raspberry Pi als QDevice mit corosync-qnetd die dritte Stimme gibt.</desc>
 
-            <rect class="d-zone" x="340" y="16" width="545" height="660" rx="18"/>
+            <rect class="d-zone" x="340" y="16" width="545" height="682" rx="18"/>
             <text class="d-zone-label" x="358" y="40">HEIMNETZ</text>
 
             <rect class="d-box" x="16" y="109" width="124" height="64" rx="10"/>
@@ -112,7 +122,7 @@
             <text class="d-sub" x="238" y="155" text-anchor="middle">nur 80 · 443</text>
 
             <!-- Raspberry Pi -->
-            <rect class="d-group" x="356" y="52" width="240" height="608" rx="14"/>
+            <rect class="d-group" x="356" y="52" width="240" height="630" rx="14"/>
             <text class="d-group-title" x="372" y="78">Raspberry Pi</text>
             <text class="d-sub" x="372" y="96">Edge · Sicherheit · Monitoring</text>
 
@@ -136,15 +146,15 @@
             <text class="d-title" x="386" y="441">Exporter</text>
             <text class="d-sub" x="386" y="459">node-exporter · cAdvisor</text>
 
-            <rect class="d-box" x="372" y="586" width="208" height="58" rx="9"/>
-            <text class="d-title" x="386" y="611">QDevice</text>
-            <text class="d-sub" x="386" y="629">corosync-qnetd · 3. Stimme</text>
+            <rect class="d-box" x="372" y="608" width="208" height="58" rx="9"/>
+            <text class="d-title" x="386" y="633">QDevice</text>
+            <text class="d-sub" x="386" y="651">corosync-qnetd · 3. Stimme</text>
 
-            <!-- NAS -->
-            <rect class="d-group" x="620" y="52" width="249" height="458" rx="14"/>
+            <!-- NAS: the Debian VM with the services, then the CI VM -->
+            <rect class="d-group" x="620" y="52" width="249" height="480" rx="14"/>
             <text class="d-group-title" x="636" y="78">NAS <tspan class="d-mono">· Proxmox</tspan></text>
-            <text class="d-sub" x="636" y="96">Debian-VM · Docker Compose</text>
-            <rect class="d-vm" x="628" y="104" width="233" height="398" rx="11"/>
+            <text class="d-sub" x="636" y="96">Debian-VM · CI-VM · Docker Compose</text>
+            <rect class="d-vm" x="628" y="104" width="233" height="338" rx="11"/>
 
             <!-- NAS boxes: y = 112 + i * 66 -->
             <rect class="d-box" x="636" y="112" width="217" height="58" rx="9"/>
@@ -167,36 +177,38 @@
             <text class="d-title" x="650" y="401">Blog &amp; Notizen</text>
             <text class="d-sub" x="650" y="419">Ghost · CouchDB</text>
 
-            <rect class="d-box" x="636" y="442" width="217" height="58" rx="9"/>
-            <text class="d-title" x="650" y="467">CI/CD</text>
-            <text class="d-sub" x="650" y="485">Jenkins · SonarQube</text>
+            <!-- CI-VM: its own VM frame below the Debian VM's -->
+            <rect class="d-vm" x="628" y="450" width="233" height="74" rx="11"/>
+            <rect class="d-box" x="636" y="458" width="217" height="58" rx="9"/>
+            <text class="d-title" x="650" y="483">CI/CD <tspan class="d-mono">· cicdbox0</tspan></text>
+            <text class="d-sub" x="650" y="501">Jenkins · lint0 · MegaLinter</text>
 
             <!-- Agent-Box: same inner layout as the NAS group, one box -->
-            <rect class="d-group" x="620" y="526" width="249" height="134" rx="14"/>
-            <text class="d-group-title" x="636" y="552">Agent-Box <tspan class="d-mono">· Proxmox</tspan></text>
-            <text class="d-sub" x="636" y="570">VM agentbox0</text>
-            <rect class="d-vm" x="628" y="578" width="233" height="74" rx="11"/>
+            <rect class="d-group" x="620" y="548" width="249" height="134" rx="14"/>
+            <text class="d-group-title" x="636" y="574">Agent-Box <tspan class="d-mono">· Proxmox</tspan></text>
+            <text class="d-sub" x="636" y="592">VM agentbox0</text>
+            <rect class="d-vm" x="628" y="600" width="233" height="74" rx="11"/>
 
-            <rect class="d-box" x="636" y="586" width="217" height="58" rx="9"/>
-            <text class="d-title" x="650" y="611">Claude Code · pi</text>
-            <text class="d-sub" x="650" y="629">Sessions in herdr</text>
+            <rect class="d-box" x="636" y="608" width="217" height="58" rx="9"/>
+            <text class="d-title" x="650" y="633">Claude Code · pi</text>
+            <text class="d-sub" x="650" y="651">Sessions in herdr</text>
 
             <!-- Cluster: NAS and Agent-Box joined, the Pi's vote feeding into the join -->
-            <path class="d-edge" d="M744 510 V526"/>
-            <path class="d-edge" d="M580 615 H600 V518 H738" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M744 532 V548"/>
+            <path class="d-edge" d="M580 637 H600 V540 H738" marker-end="url(#arrow)"/>
 
             <!-- Request path -->
             <path class="d-edge d-edge--accent" d="M140 141 H176" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M300 141 H372" marker-end="url(#arrow-accent)"/>
             <text class="d-edge-label" x="321" y="132" text-anchor="middle">:443</text>
 
-            <path class="d-edge d-edge--accent" d="M580 141 H606 V471"/>
+            <path class="d-edge d-edge--accent" d="M580 141 H606 V487"/>
             <path class="d-edge d-edge--accent" d="M606 141 H636" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M606 207 H636" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M606 273 H636" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M606 339 H636" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M606 405 H636" marker-end="url(#arrow-accent)"/>
-            <path class="d-edge d-edge--accent" d="M606 471 H636" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge d-edge--accent" d="M606 487 H636" marker-end="url(#arrow-accent)"/>
 
             <path class="d-edge" d="M422 170 V204" marker-end="url(#arrow)"/>
             <path class="d-edge" d="M530 170 V204" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
@@ -204,8 +216,9 @@
         </div>
         <figcaption>
           Die grünen Pfeile beschreiben den Weg einer Anfrage von außen. Traefik liest Docker nur über den
-          socket-proxy und bekommt seine Sperrliste von CrowdSec. Unten gibt der Pi die
-          dritte Stimme im Proxmox-Cluster aus NAS und Agent-Box ab.
+          socket-proxy und bekommt seine Sperrliste von CrowdSec. Jenkins hat auf dem NAS eine
+          eigene VM. Unten gibt der Pi die dritte Stimme im Proxmox-Cluster aus NAS und
+          Agent-Box ab.
         </figcaption>
       </figure>
     </section>
@@ -326,8 +339,8 @@
         <article class="card">
           <h3>Jenkins nur als Webhook</h3>
           <p class="card__text">
-            Jenkins hält den SSH-Schlüssel für Pi und NAS – wer Jenkins kontrolliert, ist
-            root auf beiden. Öffentlich ist deshalb genau ein Pfad, der GitHub-Webhook.
+            Jenkins hält den SSH-Schlüssel für jeden Host, auf den es deployt – wer Jenkins
+            kontrolliert, ist root auf allen. Öffentlich ist deshalb genau ein Pfad, der GitHub-Webhook.
             Alles andere auf diesem Host beantwortet Traefik mit 404, bevor es Jenkins
             erreicht.
           </p>
@@ -361,8 +374,8 @@
           <p class="card__text">
             Jeder angebundene Dienst behält ein lokales Admin-Konto neben SSO. Das ist der
             Rückweg für jede Integration und der Zugang, wenn Authentik ausfällt – ein
-            Ausfall kostet Bequemlichkeit, nie den Zugriff. Jenkins, CouchDB, Ghost und
-            SonarQube sind bewusst gar nicht angebunden.
+            Ausfall kostet Bequemlichkeit, nie den Zugriff. Jenkins, CouchDB und Ghost sind
+            bewusst gar nicht angebunden.
           </p>
         </article>
         <article class="card">
@@ -396,7 +409,8 @@
         <p>
           Jeder Dienst ist ein Verzeichnis mit einer Compose-Datei. Ein Push auf
           <code>main</code> löst über den Webhook die Pipeline aus: Sie prüft alle
-          Compose-Dateien, spiegelt das Repository per rsync auf Pi und NAS, schreibt die
+          Compose-Dateien und Jenkinsfiles und lässt MegaLinter über das ganze Repository
+          laufen, spiegelt es per rsync auf die Hosts, schreibt die
           Secrets aus den Jenkins-Credentials in <code>.env</code>-Dateien und rollt nur die
           Stacks neu aus, deren Verzeichnis sich geändert hat. Danach prüft ein Skript, dass
           jeder Container läuft, gesund ist und nicht in einem Crash-Loop hängt.
@@ -406,13 +420,22 @@
           dem letzten Commit. Sonst verschwinden die Änderungen eines gescheiterten Deploys
           stillschweigend, sobald der nächste Commit einen anderen Dienst betrifft.
         </p>
+        <p>
+          MegaLinter ist ein fremdes Image mit rund fünfzig Werkzeugen, das bei jedem Push
+          läuft. Neben den Deploy-Agents liefe es mit deren Reichweite; es bekommt deshalb
+          einen eigenen Agent auf cicdbox0, <strong>lint0</strong>. Der läuft unter einem
+          Nutzer ohne docker-Gruppe, der <code>jenkins_home</code> mit allen Credentials nicht
+          lesen kann, und startet seine Container auf einem rootless Docker-Daemon für sich
+          allein. Nicht einmal geklont wird dort: lint0 bekommt die Dateien des Commits als
+          Archiv, der GitHub-Token bleibt draußen.
+        </p>
       </div>
 
       <figure class="diagram">
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 350" role="img" aria-labelledby="d3-title d3-desc">
             <title id="d3-title">Deployment-Pipeline</title>
-            <desc id="d3-desc">Renovate und eigene Commits landen auf dem main-Branch bei GitHub. Ein Webhook startet Jenkins auf dem NAS. Die Pipeline läuft durch Checkout, Lint, Sync, Secrets, Änderungen erkennen und Deploy; Deploy rollt per SSH nur die geänderten Stacks auf dem Raspberry Pi und dem NAS aus. Nach einem erfolgreichen Deploy baut ein eigener Job, jenkins-upgrade, Jenkins selbst neu und rollt es mit Snapshot und automatischem Rollback aus.</desc>
+            <desc id="d3-desc">Renovate und eigene Commits landen auf dem main-Branch bei GitHub. Ein Webhook startet Jenkins auf der CI-VM cicdbox0. Die Pipeline läuft durch Checkout, Lint mit Compose-Prüfung und MegaLinter, Sync, Secrets, Änderungen erkennen und Deploy; Deploy rollt per SSH nur die geänderten Stacks auf dem Raspberry Pi, dem NAS, cicdbox0 und agentbox0 aus. Nach einem erfolgreichen Deploy baut ein eigener Job, jenkins-upgrade, Jenkins selbst neu und rollt es mit Snapshot und automatischem Rollback aus.</desc>
 
             <rect class="d-box" x="16" y="20" width="160" height="52" rx="10"/>
             <text class="d-title" x="30" y="42">Renovate</text>
@@ -428,7 +451,7 @@
 
             <rect class="d-box d-box--accent" x="470" y="53" width="190" height="52" rx="10"/>
             <text class="d-title" x="484" y="75">Jenkins</text>
-            <text class="d-sub" x="484" y="93">Controller auf dem NAS</text>
+            <text class="d-sub" x="484" y="93">Controller auf cicdbox0</text>
 
             <rect class="d-box" x="720" y="53" width="164" height="52" rx="10"/>
             <text class="d-title" x="734" y="75">jenkins-upgrade</text>
@@ -450,11 +473,11 @@
 
             <rect class="d-box" x="164" y="160" width="130" height="64" rx="9"/>
             <text class="d-title" x="229" y="188" text-anchor="middle">Lint</text>
-            <text class="d-sub" x="229" y="206" text-anchor="middle">compose config</text>
+            <text class="d-sub" x="229" y="206" text-anchor="middle">compose · Linter</text>
 
             <rect class="d-box" x="312" y="160" width="130" height="64" rx="9"/>
             <text class="d-title" x="377" y="188" text-anchor="middle">Sync</text>
-            <text class="d-sub" x="377" y="206" text-anchor="middle">rsync → Pi, NAS</text>
+            <text class="d-sub" x="377" y="206" text-anchor="middle">rsync → alle Hosts</text>
 
             <rect class="d-box" x="460" y="160" width="130" height="64" rx="9"/>
             <text class="d-title" x="525" y="188" text-anchor="middle">Secrets</text>
@@ -474,17 +497,28 @@
             <path class="d-edge" d="M590 192 H608" marker-end="url(#arrow)"/>
             <path class="d-edge" d="M738 192 H756" marker-end="url(#arrow)"/>
 
-            <rect class="d-group" x="480" y="278" width="190" height="56" rx="10"/>
-            <text class="d-title" x="575" y="302" text-anchor="middle">Raspberry Pi</text>
-            <text class="d-sub" x="575" y="320" text-anchor="middle">geänderte Stacks</text>
+            <!-- Deploy targets: x = 364 + i * 132 -->
+            <rect class="d-group" x="364" y="278" width="122" height="56" rx="10"/>
+            <text class="d-title" x="425" y="302" text-anchor="middle">Raspberry Pi</text>
+            <text class="d-sub" x="425" y="320" text-anchor="middle">Edge-Knoten</text>
 
-            <rect class="d-group" x="694" y="278" width="190" height="56" rx="10"/>
-            <text class="d-title" x="789" y="302" text-anchor="middle">NAS</text>
-            <text class="d-sub" x="789" y="320" text-anchor="middle">geänderte Stacks</text>
+            <rect class="d-group" x="496" y="278" width="122" height="56" rx="10"/>
+            <text class="d-title" x="557" y="302" text-anchor="middle">NAS</text>
+            <text class="d-sub" x="557" y="320" text-anchor="middle">Dienste</text>
 
-            <path class="d-edge d-edge--accent" d="M821 224 V250 H575 V278" marker-end="url(#arrow-accent)"/>
-            <path class="d-edge d-edge--accent" d="M821 250 H789 V278" marker-end="url(#arrow-accent)"/>
-            <text class="d-edge-label" x="698" y="243" text-anchor="middle">SSH · docker compose</text>
+            <rect class="d-group" x="628" y="278" width="122" height="56" rx="10"/>
+            <text class="d-title" x="689" y="302" text-anchor="middle">cicdbox0</text>
+            <text class="d-sub" x="689" y="320" text-anchor="middle">Exporter</text>
+
+            <rect class="d-group" x="760" y="278" width="122" height="56" rx="10"/>
+            <text class="d-title" x="821" y="302" text-anchor="middle">agentbox0</text>
+            <text class="d-sub" x="821" y="320" text-anchor="middle">Jenkins-Agent</text>
+
+            <path class="d-edge d-edge--accent" d="M821 224 V250 H425 V278" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge d-edge--accent" d="M557 250 V278" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge d-edge--accent" d="M689 250 V278" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge d-edge--accent" d="M821 250 V278" marker-end="url(#arrow-accent)"/>
+            <text class="d-edge-label" x="623" y="243" text-anchor="middle">SSH · docker compose · nur geänderte Stacks</text>
 
             <text class="d-note" x="16" y="286">Mail nur bei failure und fixed –</text>
             <text class="d-note" x="16" y="304">ein leeres Postfach heißt: nichts ist kaputt.</text>
@@ -511,7 +545,7 @@
           <h3>Jenkins aktualisiert sich selbst</h3>
           <p class="card__text">
             Ein Job kann den Controller, auf dem er läuft, nicht neu starten. Er übergibt
-            deshalb zuletzt an ein Skript auf dem NAS: Jenkins stoppen, <code>jenkins_home</code>
+            deshalb zuletzt an ein Skript auf cicdbox0: Jenkins stoppen, <code>jenkins_home</code>
             sichern, neue Images umtaggen, starten und prüfen – Login, Plugins, beide Agents.
             Scheitert ein Step, rollt das Skript selbstständig zurück.
           </p>
@@ -549,8 +583,12 @@
         </p>
         <p>
           Auf Wunsch sitzt zwischen Builder und Reviewer ein Quality Gate: Der Orchestrator
-          schiebt den Stand auf einen Wegwerf-Branch, lässt ihn von Jenkins in SonarQube
-          analysieren und gibt die Befunde zuerst an den Builder zurück. Am Ende steht immer
+          schiebt den Stand auf einen Wegwerf-Branch, lässt Jenkins darauf sein eigenes Gate
+          rechnen und gibt die Befunde zuerst an den Builder zurück. Das Gate fährt Linter und
+          Tests, misst die Abdeckung des neuen Codes und hält der Änderung nur vor, was sie
+          selbst hinzugefügt hat, nicht den Altbestand. Eine eigene Prüfung fängt geschwächte
+          Tests ab: gelöschte Testfälle, neue Skips, weniger Assertions oder erwartete Werte,
+          die still an die Ausgabe angepasst wurden. Am Ende steht immer
           ein Pull Request auf GitHub, den ich lese, bevor etwas gemergt wird.
         </p>
         <p>
@@ -560,12 +598,14 @@
           mit Shell. Die Frage ist also nicht, ob die VM kompromittiert werden kann, sondern
           was sie dann erreicht. Die Antwort gibt die Firewall von Proxmox, die auf der Bridge
           des Hosts greift statt in der VM, sodass nicht einmal root darin sie ändern kann.
-          Das Internet bleibt offen, auf jedem Port: Anthropic-API, GitHub,
-          Paket-Registries. Eine Port-Liste brächte Reibung, aber keinen Schutz vor
-          Exfiltration – dafür reicht 443. Im Heimnetz erreicht die VM genau drei Ziele: DNS
-          am Router, Jenkins und SonarQube auf dem NAS. Alles andere in den privaten
-          Adressbereichen wird verworfen und geloggt, auch die öffentlichen Dienste, denn im
-          LAN zeigen ihre Namen auf den Pi. Hinein kommt nur SSH vom Laptop.
+          Ins Internet darf die VM über HTTP und HTTPS, SSH und NTP – genug für Anthropic-API,
+          GitHub und Paket-Registries. Vor Exfiltration schützt diese Port-Liste nicht, dafür
+          reicht 443; aber die Box verschickt keine Mails von der Adresse des Heimnetzes, tritt
+          keinem Mining-Pool bei und scannt auf keinem anderen Port. Im Heimnetz erreicht die
+          VM genau zwei Ziele: DNS am Router und Jenkins auf cicdbox0. Alles andere in den
+          privaten Adressbereichen wird verworfen und geloggt, auch die öffentlichen Dienste,
+          denn im LAN zeigen ihre Namen auf den Pi. Hinein kommt nur SSH: vom Laptop und von
+          cicdbox0, über das die Pipeline den Jenkins-Agent der Box ausrollt.
         </p>
       </div>
 
@@ -573,7 +613,7 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 386" role="img" aria-labelledby="d5-title d5-desc">
             <title id="d5-title">Agent-Box und ihre Grenzen</title>
-            <desc id="d5-desc">In der VM agentbox0 auf der Agent-Box laufen die Rollen des ai-agents-orchestrator als getrennte Sitzungen von Claude Code oder pi in einem herdr-Workspace: Spec Collector, Builder und Reviewer, der Änderungen an den Builder zurückschicken kann. Daneben laufen ein Jenkins-Agent für die Builds der Agents als eingeschränkter Container und der Nutzer agent ohne docker-Gruppe. Die Firewall auf der Bridge des Proxmox-Hosts lässt die VM ins Internet, im Heimnetz nur zu Jenkins auf Port 8084 und SonarQube auf Port 9001 auf dem NAS sowie zum DNS des Routers. Das restliche Heimnetz – Proxmox-Hosts, Raspberry Pi, Router-Oberfläche und SSH zum NAS – wird verworfen.</desc>
+            <desc id="d5-desc">In der VM agentbox0 auf der Agent-Box laufen die Rollen des ai-agents-orchestrator als getrennte Sitzungen von Claude Code oder pi in einem herdr-Workspace: Spec Collector, Builder und Reviewer, der Änderungen an den Builder zurückschicken kann. Daneben laufen ein Jenkins-Agent für die Builds der Agents als eingeschränkter Container und der Nutzer agent ohne docker-Gruppe. Die Firewall auf der Bridge des Proxmox-Hosts lässt die VM ins Internet über HTTP, HTTPS, SSH und NTP, im Heimnetz nur zu Jenkins auf Port 8084 auf der CI-VM cicdbox0 sowie zum DNS des Routers. Das restliche Heimnetz – Proxmox-Hosts, NAS, Raspberry Pi und Router-Oberfläche – wird verworfen.</desc>
 
             <rect class="d-group" x="16" y="20" width="470" height="346" rx="14"/>
             <text class="d-group-title" x="32" y="46">Agent-Box <tspan class="d-mono">· Proxmox</tspan></text>
@@ -611,21 +651,18 @@
             <text class="d-sub" x="275" y="331">ohne docker-Gruppe</text>
 
             <rect class="d-box d-box--accent" x="560" y="40" width="324" height="64" rx="10"/>
-            <text class="d-title" x="576" y="66">Internet, jeder Port</text>
+            <text class="d-title" x="576" y="66">Internet <tspan class="d-mono">· 80 · 443 · 22 · 123</tspan></text>
             <text class="d-sub" x="576" y="85">Anthropic-API · GitHub · Registries</text>
 
             <rect class="d-group" x="560" y="136" width="324" height="114" rx="14"/>
-            <text class="d-group-title" x="576" y="162">NAS</text>
-            <rect class="d-box" x="576" y="178" width="140" height="58" rx="9"/>
-            <text class="d-title" x="646" y="203" text-anchor="middle">Jenkins</text>
-            <text class="d-sub" x="646" y="221" text-anchor="middle">:8084 · WebSocket</text>
-            <rect class="d-box" x="728" y="178" width="140" height="58" rx="9"/>
-            <text class="d-title" x="798" y="203" text-anchor="middle">SonarQube</text>
-            <text class="d-sub" x="798" y="221" text-anchor="middle">:9001</text>
+            <text class="d-group-title" x="576" y="162">cicdbox0</text>
+            <rect class="d-box" x="576" y="178" width="292" height="58" rx="9"/>
+            <text class="d-title" x="590" y="203">Jenkins</text>
+            <text class="d-sub" x="590" y="221">:8084 · API · WebSocket</text>
 
             <rect class="d-box" x="560" y="290" width="324" height="64" rx="10"/>
             <text class="d-title" x="576" y="316">Restliches Heimnetz</text>
-            <text class="d-sub" x="576" y="335">Proxmox · Pi · Router · NAS-SSH</text>
+            <text class="d-sub" x="576" y="335">Proxmox · NAS · Pi · Router</text>
 
             <path class="d-edge d-edge--accent" d="M486 72 H560" marker-end="url(#arrow-accent)"/>
             <path class="d-edge" d="M486 207 H560" marker-end="url(#arrow)"/>
@@ -635,9 +672,9 @@
           </svg>
         </div>
         <figcaption>
-          Die Rollen laufen als getrennte Sitzungen in herdr. Nach außen ist die VM offen, ins
-          Heimnetz führen nur die Wege zu Jenkins und SonarQube; DNS am Router ist der Übersicht
-          halber weggelassen.
+          Die Rollen laufen als getrennte Sitzungen in herdr. Nach außen darf die VM auf Web,
+          SSH und NTP, ins Heimnetz führt nur der Weg zu Jenkins; DNS am Router ist der
+          Übersicht halber weggelassen.
         </figcaption>
       </figure>
 
@@ -658,7 +695,7 @@
           <p class="card__text">
             Was die Agents schreiben, ist so wenig vertrauenswürdig wie sie selbst, und jeder
             Test führt es aus. Ihre Builds laufen deshalb auf einem eigenen Jenkins-Agent in der
-            Box statt neben dem Deploy-Schlüssel auf dem NAS. Ein Label allein wäre nur eine
+            Box statt neben dem Deploy-Schlüssel auf cicdbox0. Ein Label allein wäre nur eine
             Bitte, denn jeder Branch bringt sein eigenes Jenkinsfile mit. Zur Grenze machen es
             erst drei Einstellungen zusammen: Job-Beschränkungen an jedem Knoten, ein
             Label-Modus für die Box und Credentials, die auf ihren Ordner beschränkt sind.
@@ -684,8 +721,8 @@
 
       <div class="prose">
         <p>
-          Prometheus, Grafana und Alertmanager laufen auf dem Pi und beobachten alle drei Knoten:
-          node-exporter für den Host, cAdvisor für die Container, dazu die eigenen Metriken
+          Prometheus, Grafana und Alertmanager laufen auf dem Pi und beobachten alle drei Knoten
+          samt der VMs auf dem NAS: node-exporter für den Host, cAdvisor für die Container, dazu die eigenen Metriken
           von Traefik und Authentik. Die Festplatten und ZFS-Pools hängen am Proxmox-Host,
           nicht an der VM – dort läuft deshalb ein eigener node-exporter für
           Laufwerkstemperaturen, Pool-Zustand, Prüfsummenfehler und das Alter des letzten
@@ -708,11 +745,11 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 540" role="img" aria-labelledby="d4-title d4-desc">
             <title id="d4-title">Monitoring-Datenfluss</title>
-            <desc id="d4-desc">Prometheus auf dem Raspberry Pi sammelt Metriken von acht Quellen: node-exporter und cAdvisor in der NAS-VM und auf dem Pi, node-exporter mit ZFS- und Laufwerksmetriken auf den beiden Proxmox-Hosts, Traefik, CrowdSec, Authentik, dem blackbox-exporter, der die öffentlichen URLs prüft, und dem json-exporter, der zwei Tasmota-Steckdosen und die Authentik-API abfragt. Grafana zeigt die Daten in sechs Dashboards, Alertmanager verschickt Alarme per E-Mail.</desc>
+            <desc id="d4-desc">Prometheus auf dem Raspberry Pi sammelt Metriken von acht Quellen: node-exporter und cAdvisor in den beiden VMs auf dem NAS und auf dem Pi, node-exporter mit ZFS- und Laufwerksmetriken auf den beiden Proxmox-Hosts, Traefik, CrowdSec, Authentik, dem blackbox-exporter, der die öffentlichen URLs prüft, und dem json-exporter, der zwei Tasmota-Steckdosen und die Authentik-API abfragt. Grafana zeigt die Daten in sechs Dashboards, Alertmanager verschickt Alarme per E-Mail.</desc>
 
             <!-- Sources: y = 24 + i * 64 -->
             <rect class="d-box" x="16" y="24" width="240" height="52" rx="9"/>
-            <text class="d-title" x="30" y="46">NAS-VM</text>
+            <text class="d-title" x="30" y="46">NAS-VM · cicdbox0</text>
             <text class="d-sub" x="30" y="64">node-exporter · cAdvisor</text>
 
             <rect class="d-box" x="16" y="88" width="240" height="52" rx="9"/>
@@ -825,10 +862,17 @@
           </ul>
         </article>
         <article class="card">
-          <h3>NAS · Daten, Anmeldung, Web &amp; CI</h3>
+          <h3>NAS · Daten, Anmeldung &amp; Web</h3>
           <ul class="tags">
             <li>Proxmox</li><li>Debian</li><li>Authentik</li><li>PostgreSQL</li><li>MySQL</li><li>Nextcloud AIO</li>
-            <li>Syncthing</li><li>CouchDB</li><li>Ghost</li><li>Jenkins</li><li>SonarQube</li>
+            <li>Syncthing</li><li>CouchDB</li><li>Ghost</li>
+            <li>node-exporter</li><li>cAdvisor</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>NAS · CI-VM cicdbox0</h3>
+          <ul class="tags">
+            <li>Debian</li><li>Jenkins</li><li>Jenkins-Agents</li><li>MegaLinter</li><li>rootless Docker</li>
             <li>node-exporter</li><li>cAdvisor</li>
           </ul>
         </article>
