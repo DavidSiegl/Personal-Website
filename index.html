@@ -89,7 +89,7 @@
         <article class="card">
           <h3>Monitoring &amp; Qualität</h3>
           <ul class="tags">
-            <li>Prometheus</li><li>Grafana</li><li>Alertmanager</li><li>Checkmk</li><li>SonarQube</li><li>Log-Analyse</li>
+            <li>Prometheus</li><li>Grafana</li><li>Alertmanager</li><li>Checkmk</li><li>SonarQube</li><li>MegaLinter</li><li>Log-Analyse</li>
           </ul>
         </article>
 
@@ -129,9 +129,9 @@
           <p class="card__text">
             Rund zwanzig Dienste in Docker Compose auf Raspberry Pi und NAS: Medien, Dokumente und
             Backups im Eigenbetrieb, hinter Traefik und CrowdSec, mit einer Anmeldung über
-            Authentik, automatisierten Updates und einer Jenkins-Pipeline davor. Daneben eine
-            eigene Agent-Box im Proxmox-Cluster, auf der Claude-Code-Sessions getrennt von den
-            Daten arbeiten.
+            Authentik, automatisierten Updates und einer Jenkins-Pipeline in eigener VM davor.
+            Daneben eine eigene Agent-Box im Proxmox-Cluster, auf der Coding-Agents – Claude
+            Code und pi – getrennt von den Daten arbeiten.
             <a href="homelab.html">Zur Architektur →</a>
           </p>
           <ul class="tags">
@@ -212,8 +212,9 @@
         <a class="project" href="https://github.com/DavidSiegl/ai-agents-orchestrator" target="_blank" rel="noopener noreferrer">
           <span class="project__head"><span class="project__name">ai-agents-orchestrator</span><span class="project__lang">Python</span></span>
           <span class="project__desc">
-            Orchestrierung mehrerer LLM-Agenten, abgesichert durch eine Jenkins-Pipeline
-            und statische Analyse mit SonarQube.
+            Spec Collector, Builder und Reviewer als getrennte Agent-Sitzungen in herdr, mit
+            Claude Code oder pi. Ein eigenes Quality Gate in Jenkins prüft jede Runde, bevor
+            der Reviewer sie sieht.
           </span>
         </a>
       </div>
