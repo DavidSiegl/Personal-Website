@@ -52,11 +52,6 @@ TITLE_FIX = {
 }
 AUTHOR_FIX = {"Bri Bruce, Of, Andrew Bruce": "Peter Bruce, Andrew Bruce"}
 
-# Diese Notiz traegt #aktuell-lesend, verweist aber auf [[Literatur]] statt auf
-# [[Informatik]] - vermutlich ein Versehen im Vault. Bis die Notiz korrigiert ist,
-# wird sie hier namentlich aufgenommen.
-CURRENT_EXTRA = {"A Philosophy of Software Design"}
-
 
 def clean(s):
     return re.sub(r'\s+', ' ', s.replace('\\"', '').replace('\\', '').strip(' "\',')).strip()
@@ -72,7 +67,7 @@ def load():
         if end < 0:
             continue
         body = txt[end + 4:]
-        informatik = "[[Informatik]]" in body or p.stem in CURRENT_EXTRA
+        informatik = "[[Informatik]]" in body
         reading = "#aktuell-lesend" in body
         if not informatik or not (reading or "#gelesen" in body):
             continue
