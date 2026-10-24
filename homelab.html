@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Homelab — David Siegl</title>
-  <meta name="description" content="Architektur des Homelabs von David Siegl: drei Knoten, Proxmox-Cluster mit eigener CI-VM und Agent-Box für Claude Code und pi, Docker Compose, Traefik und CrowdSec am Edge, Single Sign-on mit Authentik, Deployment über Jenkins, MegaLinter und Renovate, Monitoring mit Prometheus und Grafana.">
+  <meta name="description" content="Architektur des Homelabs von David Siegl: drei Knoten, Proxmox-Cluster mit eigener CI-VM und Agent-Box für Claude Code und pi, Docker Compose, Traefik und CrowdSec am Edge, Single Sign-on mit Authentik, Deployment über Jenkins, MegaLinter und Renovate, Monitoring mit Prometheus und Grafana, Erkennung mit Falco, ClamAV und Trivy.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/favicon.png" sizes="96x96" type="image/png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -49,7 +49,7 @@
 
     <dl class="stats">
       <div><dt>Knoten</dt><dd>3</dd></div>
-      <div><dt>Compose-Stacks</dt><dd>19</dd></div>
+      <div><dt>Compose-Stacks</dt><dd>21</dd></div>
       <div><dt>Öffentliche Router</dt><dd>10</dd></div>
       <div><dt>Dashboards</dt><dd>6</dd></div>
     </dl>
@@ -427,7 +427,8 @@
           Nutzer ohne docker-Gruppe, der <code>jenkins_home</code> mit allen Credentials nicht
           lesen kann, und startet seine Container auf einem rootless Docker-Daemon für sich
           allein. Nicht einmal geklont wird dort: lint0 bekommt die Dateien des Commits als
-          Archiv, der GitHub-Token bleibt draußen.
+          Archiv, der GitHub-Token bleibt draußen. Aus demselben Grund läuft dort nachts der
+          <a href="#erkennung">Schwachstellen-Scan</a>.
         </p>
       </div>
 
@@ -699,6 +700,8 @@
             Bitte, denn jeder Branch bringt sein eigenes Jenkinsfile mit. Zur Grenze machen es
             erst drei Einstellungen zusammen: Job-Beschränkungen an jedem Knoten, ein
             Label-Modus für die Box und Credentials, die auf ihren Ordner beschränkt sind.
+            Auch das Image des Agents ist ein eigenes: Rust, Node und Tauris Build-Pakete samt
+            Browser-Engine liegen nur dort, nicht neben dem Deploy-Schlüssel.
           </p>
         </article>
         <article class="card">
@@ -743,9 +746,9 @@
 
       <figure class="diagram">
         <div class="diagram__scroll">
-          <svg viewBox="0 0 900 540" role="img" aria-labelledby="d4-title d4-desc">
+          <svg viewBox="0 0 900 604" role="img" aria-labelledby="d4-title d4-desc">
             <title id="d4-title">Monitoring-Datenfluss</title>
-            <desc id="d4-desc">Prometheus auf dem Raspberry Pi sammelt Metriken von acht Quellen: node-exporter und cAdvisor in den beiden VMs auf dem NAS und auf dem Pi, node-exporter mit ZFS- und Laufwerksmetriken auf den beiden Proxmox-Hosts, Traefik, CrowdSec, Authentik, dem blackbox-exporter, der die öffentlichen URLs prüft, und dem json-exporter, der zwei Tasmota-Steckdosen und die Authentik-API abfragt. Grafana zeigt die Daten in sechs Dashboards, Alertmanager verschickt Alarme per E-Mail.</desc>
+            <desc id="d4-desc">Prometheus auf dem Raspberry Pi sammelt Metriken von neun Quellen: node-exporter und cAdvisor in den beiden VMs auf dem NAS und auf dem Pi, node-exporter mit ZFS- und Laufwerksmetriken auf den beiden Proxmox-Hosts, Traefik, CrowdSec, Authentik, dem blackbox-exporter, der die öffentlichen URLs prüft, und dem json-exporter, der zwei Tasmota-Steckdosen und die Authentik-API abfragt, sowie von Falco auf dem NAS, cicdbox0 und agentbox0. Die Ergebnisse von ClamAV und Trivy liest der node-exporter der jeweiligen VM aus einer Textdatei. Grafana zeigt die Daten in sechs Dashboards, Alertmanager verschickt Alarme per E-Mail.</desc>
 
             <!-- Sources: y = 24 + i * 64 -->
             <rect class="d-box" x="16" y="24" width="240" height="52" rx="9"/>
@@ -780,29 +783,34 @@
             <text class="d-title" x="30" y="494">json-exporter</text>
             <text class="d-sub" x="30" y="512">Steckdosen · Authentik-API</text>
 
-            <rect class="d-box d-box--accent" x="350" y="242" width="200" height="64" rx="10"/>
-            <text class="d-title" x="450" y="269" text-anchor="middle">Prometheus</text>
-            <text class="d-sub" x="450" y="287" text-anchor="middle">30 s · 15 Tage · 4 GB</text>
+            <rect class="d-box" x="16" y="536" width="240" height="52" rx="9"/>
+            <text class="d-title" x="30" y="558">Falco</text>
+            <text class="d-sub" x="30" y="576">Regeltreffer je Host</text>
 
-            <rect class="d-box" x="644" y="156" width="240" height="64" rx="10"/>
-            <text class="d-title" x="658" y="183">Grafana</text>
-            <text class="d-sub" x="658" y="201">6 provisionierte Dashboards</text>
+            <rect class="d-box d-box--accent" x="350" y="274" width="200" height="64" rx="10"/>
+            <text class="d-title" x="450" y="301" text-anchor="middle">Prometheus</text>
+            <text class="d-sub" x="450" y="319" text-anchor="middle">30 s · 15 Tage · 4 GB</text>
 
-            <rect class="d-box" x="644" y="328" width="240" height="64" rx="10"/>
-            <text class="d-title" x="658" y="355">Alertmanager</text>
-            <text class="d-sub" x="658" y="373">Regeln → E-Mail</text>
+            <rect class="d-box" x="644" y="188" width="240" height="64" rx="10"/>
+            <text class="d-title" x="658" y="215">Grafana</text>
+            <text class="d-sub" x="658" y="233">6 provisionierte Dashboards</text>
 
-            <path class="d-edge" d="M256 50 C 310 50, 300 246, 350 246" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 114 C 310 114, 300 254, 350 254" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 178 C 310 178, 300 262, 350 262" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 242 C 310 242, 300 270, 350 270" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 306 C 310 306, 300 278, 350 278" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 370 C 310 370, 300 286, 350 286" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 434 C 310 434, 300 294, 350 294" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M256 498 C 310 498, 300 302, 350 302" marker-end="url(#arrow)"/>
+            <rect class="d-box" x="644" y="360" width="240" height="64" rx="10"/>
+            <text class="d-title" x="658" y="387">Alertmanager</text>
+            <text class="d-sub" x="658" y="405">Regeln → E-Mail</text>
 
-            <path class="d-edge d-edge--accent" d="M550 264 C 600 264, 595 188, 644 188" marker-end="url(#arrow-accent)"/>
-            <path class="d-edge d-edge--accent" d="M550 284 C 600 284, 595 360, 644 360" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge" d="M256 50 C 310 50, 300 278, 350 278" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 114 C 310 114, 300 285, 350 285" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 178 C 310 178, 300 292, 350 292" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 242 C 310 242, 300 299, 350 299" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 306 C 310 306, 300 306, 350 306" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 370 C 310 370, 300 313, 350 313" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 434 C 310 434, 300 320, 350 320" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 498 C 310 498, 300 327, 350 327" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 562 C 310 562, 300 334, 350 334" marker-end="url(#arrow)"/>
+
+            <path class="d-edge d-edge--accent" d="M550 296 C 600 296, 595 220, 644 220" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge d-edge--accent" d="M550 316 C 600 316, 595 392, 644 392" marker-end="url(#arrow-accent)"/>
           </svg>
         </div>
         <figcaption>
@@ -842,7 +850,125 @@
       </div>
     </section>
 
-    <section id="dienste" class="section">
+    <section id="erkennung" class="section">
+      <h2>Was schon drin ist</h2>
+      <p class="section__lede">CrowdSec entscheidet, wer hereinkommt. Drei weitere Werkzeuge suchen, was trotzdem da ist.</p>
+
+      <div class="prose">
+        <p>
+          Falco fragt, was gerade läuft; ClamAV, was auf den Platten liegt; Trivy, welche
+          bekannten Lücken in den Images und Paketen stecken. Keines der drei blockiert etwas.
+          Sie melden, und zwar wie alles andere: als Metrik an Prometheus, als Mail über
+          Alertmanager.
+        </p>
+        <p>
+          <strong>Falco</strong> hängt mit einer eBPF-Probe im Kernel von NAS, cicdbox0 und
+          agentbox0 und prüft jeden Syscall gegen seine Regeln: eine Shell, die in einem
+          Container startet, eine Credential-Datei, die ein unerwartetes Programm liest, ein
+          Binary, das abgelegt und sofort ausgeführt wird. Die Treffer zählt Falco je Regel,
+          und Prometheus holt die Zähler ab, statt dass Falco sie schickt. Dafür braucht jede
+          VM nur eine eingehende Regel für den Pi – Pushen hieße, der Agent-Box einen Weg zum
+          Pi zu öffnen, deren Firewall ihr sonst nichts im Heimnetz lässt.
+        </p>
+        <p>
+          <strong>ClamAV</strong> prüft alle 15 Minuten, was neu in den Bibliotheken für
+          Bücher und Hörbücher liegt, und verschiebt Infiziertes in eine Quarantäne. Nachts
+          liest es jede Datei auf dem NAS, meldet dort aber nur: Ein Fehlalarm, der eine Datei
+          aus dem System oder einem Backup verschiebt, richtet mehr Schaden an als der Fund.
+          Der Daemon, der die Dateien parst, läuft unter einer eigenen uid ohne Leserechte;
+          geöffnet werden sie von einem zweiten Prozess, der ihm nur die Deskriptoren reicht.
+        </p>
+        <p>
+          <strong>Trivy</strong> durchsucht jede Nacht jedes Image aus den Compose-Dateien,
+          die beiden selbst gebauten Jenkins-Images und die Debian-Pakete jedes Hosts nach
+          Lücken der Stufe HIGH oder CRITICAL, für die es einen Fix gibt. Es ist ein eigener
+          Job, damit eine neue CVE in einem unveränderten Image keinen Deploy aufhält. Eine
+          Mail kommt erst, wenn ein CRITICAL eine Woche lang offen bleibt.
+        </p>
+      </div>
+
+      <figure class="diagram">
+        <div class="diagram__scroll">
+          <svg viewBox="0 0 900 330" role="img" aria-labelledby="d6-title d6-desc">
+            <title id="d6-title">Erkennung auf den Knoten</title>
+            <desc id="d6-desc">Drei Werkzeuge melden an Prometheus auf dem Raspberry Pi: Falco prüft laufend die Syscalls auf dem NAS, cicdbox0 und agentbox0, und Prometheus fragt seine Zähler direkt ab. ClamAV prüft alle 15 Minuten neue Bücher und Hörbücher und nachts jede Datei auf dem NAS; seine Ergebnisse liest der node-exporter des NAS aus einer Textdatei. Trivy scannt nachts auf lint0 die Images und die Debian-Pakete der Hosts; seine Ergebnisse liest der node-exporter auf cicdbox0. Alertmanager verschickt jeden Fund per E-Mail.</desc>
+
+            <!-- Scanners: y = 20 + i * 92 -->
+            <rect class="d-box" x="16" y="20" width="320" height="76" rx="9"/>
+            <text class="d-title" x="30" y="44">Falco <tspan class="d-mono">· laufend</tspan></text>
+            <text class="d-sub" x="30" y="62">Syscalls · NAS · cicdbox0 · agentbox0</text>
+            <text class="d-sub" x="30" y="80">/metrics, vom Pi abgefragt</text>
+
+            <rect class="d-box" x="16" y="112" width="320" height="76" rx="9"/>
+            <text class="d-title" x="30" y="136">ClamAV <tspan class="d-mono">· 15 min · nachts</tspan></text>
+            <text class="d-sub" x="30" y="154">neue Bücher · jede Datei auf dem NAS</text>
+            <text class="d-sub" x="30" y="172">Textdatei → node-exporter</text>
+
+            <rect class="d-box" x="16" y="204" width="320" height="76" rx="9"/>
+            <text class="d-title" x="30" y="228">Trivy <tspan class="d-mono">· nachts</tspan></text>
+            <text class="d-sub" x="30" y="246">Images · Debian-Pakete der Hosts</text>
+            <text class="d-sub" x="30" y="264">auf lint0 · Textdatei auf cicdbox0</text>
+
+            <rect class="d-box d-box--accent" x="420" y="118" width="190" height="64" rx="10"/>
+            <text class="d-title" x="515" y="145" text-anchor="middle">Prometheus</text>
+            <text class="d-sub" x="515" y="163" text-anchor="middle">Raspberry Pi</text>
+
+            <rect class="d-box" x="684" y="118" width="200" height="64" rx="10"/>
+            <text class="d-title" x="698" y="145">Alertmanager</text>
+            <text class="d-sub" x="698" y="163">E-Mail je Fund</text>
+
+            <path class="d-edge" d="M336 58 C 380 58, 375 138, 420 138" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M336 150 H420" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M336 242 C 380 242, 375 162, 420 162" marker-end="url(#arrow)"/>
+            <path class="d-edge d-edge--accent" d="M610 150 H684" marker-end="url(#arrow-accent)"/>
+
+            <text class="d-note" x="16" y="312">Ein Fund ist eine Mail, kein roter Build.</text>
+          </svg>
+        </div>
+        <figcaption>
+          Alle drei melden über denselben Weg wie das übrige Monitoring. Schweigt einer, fällt
+          das ebenfalls auf: Falco ohne Events, ein Sweep, der zwei Nächte nicht fertig wird,
+          oder ein Trivy-Lauf, der seit 60 Stunden fehlt, lösen jeweils einen eigenen Alarm aus.
+        </figcaption>
+      </figure>
+
+      <div class="grid notes">
+        <article class="card">
+          <h3>Der Scanner als Risiko</h3>
+          <p class="card__text">
+            Trivys Release-Pipeline wurde im März 2026 kompromittiert. Der Scanner bekommt
+            deshalb dieselbe Behandlung wie MegaLinter: Er läuft auf lint0, ohne Credential, und
+            bekommt immer nur ein Objekt hinein – eine Image-Referenz, ein Image-Archiv oder den
+            Paket-Snapshot eines Hosts. Auf die Hosts selbst kommt er nie; sie liefern über SSH
+            nur ihre dpkg-Datenbank. Das Image ist per Digest fixiert, und bevor ein Update
+            gemergt wird, prüft cosign, dass Trivys eigener Release-Workflow es signiert hat.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Kein Falco auf dem Pi – noch</h3>
+          <p class="card__text">
+            Der Pi wäre der erste Kandidat: Er ist der einzige Host, den das Internet erreicht,
+            und eine Shell aus Traefik heraus ist genau, wofür Falco da ist. Raspberry Pi OS
+            baut seinen Kernel aber ohne BTF, und ohne BTF bleibt nur ein Kernel-Modul, das
+            nach jedem Kernel-Update neu gebaut werden muss – im Kernel der Maschine, vor der
+            alle Dienste stehen. Das lohnt sich erst, wenn klar ist, wie laut Falco auf den
+            anderen drei Hosts ist.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Was ein Scan nicht sieht</h3>
+          <p class="card__text">
+            ClamAV liest Dateien bis 2&nbsp;GB, größere gelten ungelesen als sauber; gegen eine
+            so aufgeblähte Datei hilft nur, dass Downloads mit den typischen Endungen von
+            Schadsoftware gar nicht erst angenommen werden. Trivy liest die Jenkins-Plugins
+            nicht und gleicht Pakete nur mit Debians Security-Tracker ab – Proxmox' eigene
+            Pakete gelten damit als sauber, was hier heißt: ungeprüft.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="dienste" class="section section--alt">
       <h2>Dienste</h2>
       <p class="section__lede">Was auf den drei Knoten läuft.</p>
 
@@ -865,22 +991,22 @@
           <h3>NAS · Daten, Anmeldung &amp; Web</h3>
           <ul class="tags">
             <li>Proxmox</li><li>Debian</li><li>Authentik</li><li>PostgreSQL</li><li>MySQL</li><li>Nextcloud AIO</li>
-            <li>Syncthing</li><li>CouchDB</li><li>Ghost</li>
+            <li>Syncthing</li><li>CouchDB</li><li>Ghost</li><li>ClamAV</li><li>Falco</li>
             <li>node-exporter</li><li>cAdvisor</li>
           </ul>
         </article>
         <article class="card">
           <h3>NAS · CI-VM cicdbox0</h3>
           <ul class="tags">
-            <li>Debian</li><li>Jenkins</li><li>Jenkins-Agents</li><li>MegaLinter</li><li>rootless Docker</li>
-            <li>node-exporter</li><li>cAdvisor</li>
+            <li>Debian</li><li>Jenkins</li><li>Jenkins-Agents</li><li>MegaLinter</li><li>Trivy</li><li>rootless Docker</li>
+            <li>Falco</li><li>node-exporter</li><li>cAdvisor</li>
           </ul>
         </article>
         <article class="card">
           <h3>Agent-Box</h3>
           <ul class="tags">
             <li>Proxmox</li><li>Claude Code</li><li>pi</li><li>herdr</li><li>ai-agents-orchestrator</li>
-            <li>Docker</li><li>Jenkins-Agent</li><li>node-exporter</li>
+            <li>Docker</li><li>Jenkins-Agent</li><li>Falco</li><li>node-exporter</li>
           </ul>
         </article>
       </div>
