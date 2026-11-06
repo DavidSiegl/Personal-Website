@@ -152,6 +152,7 @@ def main():
     <a href="homelab.html">Homelab</a>
     <a class="topbar__here" href="lektuere.html" aria-current="page">Lektüre</a>
     <a href="zertifizierungen.html">Zertifizierungen</a>
+    <a href="https://blog.kryochamber.xyz" target="_blank" rel="noopener noreferrer">Filmblog</a>
   </nav>
 
   <header class="pagehead">
@@ -214,6 +215,7 @@ def main():
       <a href="index.html">Startseite</a>
       <a href="homelab.html">Homelab</a>
       <a href="zertifizierungen.html">Zertifizierungen</a>
+      <a href="https://blog.kryochamber.xyz" target="_blank" rel="noopener noreferrer">Filmblog</a>
       <a href="https://github.com/DavidSiegl" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="mailto:david.siegl95@gmail.com">E-Mail</a>
     </p>
