@@ -18,6 +18,7 @@
     <a class="topbar__here" href="homelab.html" aria-current="page">Homelab</a>
     <a href="lektuere.html">Lektüre</a>
     <a href="zertifizierungen.html">Zertifizierungen</a>
+    <a href="https://blog.kryochamber.xyz" target="_blank" rel="noopener noreferrer">Filmblog</a>
   </nav>
 
   <!-- Arrowheads shared by every diagram on the page. A display:none SVG would
@@ -314,7 +315,7 @@
         <article class="card">
           <h3>Kein Docker-Socket in Traefik</h3>
           <p class="card__text">
-            Traefik verabeitet jede Anfrage aus dem Internet und führt dabei den CrowdSec-Bouncer
+            Traefik verarbeitet jede Anfrage aus dem Internet und führt dabei den CrowdSec-Bouncer
             als Plugin aus. Mit eingebundenem Docker-Socket käme jede Lücke, die dort
             Codeausführung erlaubt, root-Rechten auf dem Pi gleich. Stattdessen fragt Traefik
             einen socket-proxy ab, der nur Container auflisten und Events lesen darf und in
@@ -409,11 +410,15 @@
         <p>
           Jeder Dienst ist ein Verzeichnis mit einer Compose-Datei. Ein Push auf
           <code>main</code> löst über den Webhook die Pipeline aus: Sie prüft alle
-          Compose-Dateien und Jenkinsfiles und lässt MegaLinter über das ganze Repository
-          laufen, spiegelt es per rsync auf die Hosts, schreibt die
+          Compose-Dateien und Jenkinsfiles, lässt MegaLinter über das ganze Repository
+          laufen und führt die Tests der eigenen Skripte aus – wo ein Container ein Skript
+          einbindet, im Image dieses Containers, mit dessen Python. Danach spiegelt sie das
+          Repository per rsync auf die Hosts, schreibt die
           Secrets aus den Jenkins-Credentials in <code>.env</code>-Dateien und rollt nur die
-          Stacks neu aus, deren Verzeichnis sich geändert hat. Danach prüft ein Skript, dass
-          jeder Container läuft, gesund ist und nicht in einem Crash-Loop hängt.
+          Stacks neu aus, deren Verzeichnis sich geändert hat. Ein Skript prüft dann, dass
+          jeder Container läuft, gesund ist und nicht in einem Crash-Loop hängt. Zum Schluss
+          hinterlegt die Pipeline für jeden Host, welche Container dort laufen sollen; fehlt
+          später einer davon, meldet das ein Alarm – auch lange nach dem Deploy.
         </p>
         <p>
           „Geändert“ heißt dabei: seit dem letzten <em>erfolgreichen</em> Build, nicht seit
@@ -436,7 +441,7 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 350" role="img" aria-labelledby="d3-title d3-desc">
             <title id="d3-title">Deployment-Pipeline</title>
-            <desc id="d3-desc">Renovate und eigene Commits landen auf dem main-Branch bei GitHub. Ein Webhook startet Jenkins auf der CI-VM cicdbox0. Die Pipeline läuft durch Checkout, Lint mit Compose-Prüfung und MegaLinter, Sync, Secrets, Änderungen erkennen und Deploy; Deploy rollt per SSH nur die geänderten Stacks auf dem Raspberry Pi, dem NAS, cicdbox0 und agentbox0 aus. Nach einem erfolgreichen Deploy baut ein eigener Job, jenkins-upgrade, Jenkins selbst neu und rollt es mit Snapshot und automatischem Rollback aus.</desc>
+            <desc id="d3-desc">Renovate und eigene Commits landen auf dem main-Branch bei GitHub. Ein Webhook startet Jenkins auf der CI-VM cicdbox0. Die Pipeline läuft durch Checkout, Lint mit Compose-Prüfung und MegaLinter, Test, Sync, Secrets, Änderungen erkennen und Deploy; Deploy rollt per SSH nur die geänderten Stacks auf dem Raspberry Pi, dem NAS, cicdbox0 und agentbox0 aus. Nach einem erfolgreichen Deploy baut ein eigener Job, jenkins-upgrade, Jenkins selbst neu und rollt es mit Snapshot und automatischem Rollback aus.</desc>
 
             <rect class="d-box" x="16" y="20" width="160" height="52" rx="10"/>
             <text class="d-title" x="30" y="42">Renovate</text>
@@ -465,38 +470,43 @@
             <path class="d-edge" d="M660 79 H720" marker-end="url(#arrow)"/>
             <text class="d-edge-label" x="690" y="70" text-anchor="middle">danach</text>
 
-            <path class="d-edge d-edge--accent" d="M565 105 V132 H81 V160" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge d-edge--accent" d="M565 105 V132 H73 V160" marker-end="url(#arrow-accent)"/>
 
-            <!-- Stages: x = 16 + i * 148 -->
-            <rect class="d-box" x="16" y="160" width="130" height="64" rx="9"/>
-            <text class="d-title" x="81" y="188" text-anchor="middle">Checkout</text>
-            <text class="d-sub" x="81" y="206" text-anchor="middle">Commit fixieren</text>
+            <!-- Stages: x = 16 + i * 126 -->
+            <rect class="d-box" x="16" y="160" width="114" height="64" rx="9"/>
+            <text class="d-title" x="73" y="188" text-anchor="middle">Checkout</text>
+            <text class="d-sub" x="73" y="206" text-anchor="middle">Commit fixieren</text>
 
-            <rect class="d-box" x="164" y="160" width="130" height="64" rx="9"/>
-            <text class="d-title" x="229" y="188" text-anchor="middle">Lint</text>
-            <text class="d-sub" x="229" y="206" text-anchor="middle">compose · Linter</text>
+            <rect class="d-box" x="142" y="160" width="114" height="64" rx="9"/>
+            <text class="d-title" x="199" y="188" text-anchor="middle">Lint</text>
+            <text class="d-sub" x="199" y="206" text-anchor="middle">compose · Linter</text>
 
-            <rect class="d-box" x="312" y="160" width="130" height="64" rx="9"/>
-            <text class="d-title" x="377" y="188" text-anchor="middle">Sync</text>
-            <text class="d-sub" x="377" y="206" text-anchor="middle">rsync → alle Hosts</text>
+            <rect class="d-box" x="268" y="160" width="114" height="64" rx="9"/>
+            <text class="d-title" x="325" y="188" text-anchor="middle">Test</text>
+            <text class="d-sub" x="325" y="206" text-anchor="middle">bats · unittest</text>
 
-            <rect class="d-box" x="460" y="160" width="130" height="64" rx="9"/>
-            <text class="d-title" x="525" y="188" text-anchor="middle">Secrets</text>
-            <text class="d-sub" x="525" y="206" text-anchor="middle">.env schreiben</text>
+            <rect class="d-box" x="394" y="160" width="114" height="64" rx="9"/>
+            <text class="d-title" x="451" y="188" text-anchor="middle">Sync</text>
+            <text class="d-sub" x="451" y="206" text-anchor="middle">rsync → Hosts</text>
 
-            <rect class="d-box" x="608" y="160" width="130" height="64" rx="9"/>
-            <text class="d-title" x="673" y="188" text-anchor="middle">Änderungen</text>
-            <text class="d-sub" x="673" y="206" text-anchor="middle">seit letztem Grün</text>
+            <rect class="d-box" x="520" y="160" width="114" height="64" rx="9"/>
+            <text class="d-title" x="577" y="188" text-anchor="middle">Secrets</text>
+            <text class="d-sub" x="577" y="206" text-anchor="middle">.env schreiben</text>
 
-            <rect class="d-box d-box--accent" x="756" y="160" width="130" height="64" rx="9"/>
-            <text class="d-title" x="821" y="188" text-anchor="middle">Deploy</text>
-            <text class="d-sub" x="821" y="206" text-anchor="middle">pull · up · verify</text>
+            <rect class="d-box" x="646" y="160" width="114" height="64" rx="9"/>
+            <text class="d-title" x="703" y="188" text-anchor="middle">Änderungen</text>
+            <text class="d-sub" x="703" y="206" text-anchor="middle">seit letztem OK</text>
 
-            <path class="d-edge" d="M146 192 H164" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M294 192 H312" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M442 192 H460" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M590 192 H608" marker-end="url(#arrow)"/>
-            <path class="d-edge" d="M738 192 H756" marker-end="url(#arrow)"/>
+            <rect class="d-box d-box--accent" x="772" y="160" width="114" height="64" rx="9"/>
+            <text class="d-title" x="829" y="188" text-anchor="middle">Deploy</text>
+            <text class="d-sub" x="829" y="206" text-anchor="middle">up · verify</text>
+
+            <path class="d-edge" d="M130 192 H142" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M256 192 H268" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M382 192 H394" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M508 192 H520" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M634 192 H646" marker-end="url(#arrow)"/>
+            <path class="d-edge" d="M760 192 H772" marker-end="url(#arrow)"/>
 
             <!-- Deploy targets: x = 364 + i * 132 -->
             <rect class="d-group" x="364" y="278" width="122" height="56" rx="10"/>
@@ -515,7 +525,7 @@
             <text class="d-title" x="821" y="302" text-anchor="middle">agentbox0</text>
             <text class="d-sub" x="821" y="320" text-anchor="middle">Jenkins-Agent</text>
 
-            <path class="d-edge d-edge--accent" d="M821 224 V250 H425 V278" marker-end="url(#arrow-accent)"/>
+            <path class="d-edge d-edge--accent" d="M829 224 V250 H425 V278" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M557 250 V278" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M689 250 V278" marker-end="url(#arrow-accent)"/>
             <path class="d-edge d-edge--accent" d="M821 250 V278" marker-end="url(#arrow-accent)"/>
@@ -570,7 +580,7 @@
         <p>
           Auf der Agent-Box laufen keine einzelnen Chat-Sitzungen, sondern ein Workflow mit
           getrennten Rollen, gesteuert vom
-          <a href="https://github.com/DavidSiegl/ai-agents-orchestrator" target="_blank" rel="noopener noreferrer">ai-agents-orchestrator</a>,
+          <a href="https://github.com/DavidSiegl/octoflow-ai" target="_blank" rel="noopener noreferrer">octoflow-ai</a>,
           einem eigenen Projekt. Ein Spec Collector befragt mich zur Aufgabe und schreibt eine
           Spezifikation, ein Builder setzt sie auf einem eigenen Branch um, und ein Reviewer
           prüft das Ergebnis in einer frischen Sitzung gegen die Spezifikation und schickt es
@@ -614,7 +624,7 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 386" role="img" aria-labelledby="d5-title d5-desc">
             <title id="d5-title">Agent-Box und ihre Grenzen</title>
-            <desc id="d5-desc">In der VM agentbox0 auf der Agent-Box laufen die Rollen des ai-agents-orchestrator als getrennte Sitzungen von Claude Code oder pi in einem herdr-Workspace: Spec Collector, Builder und Reviewer, der Änderungen an den Builder zurückschicken kann. Daneben laufen ein Jenkins-Agent für die Builds der Agents als eingeschränkter Container und der Nutzer agent ohne docker-Gruppe. Die Firewall auf der Bridge des Proxmox-Hosts lässt die VM ins Internet über HTTP, HTTPS, SSH und NTP, im Heimnetz nur zu Jenkins auf Port 8084 auf der CI-VM cicdbox0 sowie zum DNS des Routers. Das restliche Heimnetz – Proxmox-Hosts, NAS, Raspberry Pi und Router-Oberfläche – wird verworfen.</desc>
+            <desc id="d5-desc">In der VM agentbox0 auf der Agent-Box laufen die Rollen von octoflow-ai als getrennte Sitzungen von Claude Code oder pi in einem herdr-Workspace: Spec Collector, Builder und Reviewer, der Änderungen an den Builder zurückschicken kann. Daneben laufen ein Jenkins-Agent für die Builds der Agents als eingeschränkter Container und der Nutzer agent ohne docker-Gruppe. Die Firewall auf der Bridge des Proxmox-Hosts lässt die VM ins Internet über HTTP, HTTPS, SSH und NTP, im Heimnetz nur zu Jenkins auf Port 8084 auf der CI-VM cicdbox0 sowie zum DNS des Routers. Das restliche Heimnetz – Proxmox-Hosts, NAS, Raspberry Pi und Router-Oberfläche – wird verworfen.</desc>
 
             <rect class="d-group" x="16" y="20" width="470" height="346" rx="14"/>
             <text class="d-group-title" x="32" y="46">Agent-Box <tspan class="d-mono">· Proxmox</tspan></text>
@@ -725,7 +735,7 @@
       <div class="prose">
         <p>
           Prometheus, Grafana und Alertmanager laufen auf dem Pi und beobachten alle drei Knoten
-          samt der VMs auf dem NAS: node-exporter für den Host, cAdvisor für die Container, dazu die eigenen Metriken
+          samt ihrer VMs – der Docker-VM und cicdbox0 auf dem NAS, agentbox0 auf der Agent-Box: node-exporter für den Host, cAdvisor für die Container, dazu die eigenen Metriken
           von Traefik und Authentik. Die Festplatten und ZFS-Pools hängen am Proxmox-Host,
           nicht an der VM – dort läuft deshalb ein eigener node-exporter für
           Laufwerkstemperaturen, Pool-Zustand, Prüfsummenfehler und das Alter des letzten
@@ -748,11 +758,11 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 604" role="img" aria-labelledby="d4-title d4-desc">
             <title id="d4-title">Monitoring-Datenfluss</title>
-            <desc id="d4-desc">Prometheus auf dem Raspberry Pi sammelt Metriken von neun Quellen: node-exporter und cAdvisor in den beiden VMs auf dem NAS und auf dem Pi, node-exporter mit ZFS- und Laufwerksmetriken auf den beiden Proxmox-Hosts, Traefik, CrowdSec, Authentik, dem blackbox-exporter, der die öffentlichen URLs prüft, und dem json-exporter, der zwei Tasmota-Steckdosen und die Authentik-API abfragt, sowie von Falco auf dem NAS, cicdbox0 und agentbox0. Die Ergebnisse von ClamAV und Trivy liest der node-exporter der jeweiligen VM aus einer Textdatei. Grafana zeigt die Daten in sechs Dashboards, Alertmanager verschickt Alarme per E-Mail.</desc>
+            <desc id="d4-desc">Prometheus auf dem Raspberry Pi sammelt Metriken von neun Quellen: node-exporter und cAdvisor in den beiden VMs auf dem NAS, in agentbox0 und auf dem Pi, node-exporter mit ZFS- und Laufwerksmetriken auf den beiden Proxmox-Hosts, Traefik, CrowdSec, Authentik, dem blackbox-exporter, der die öffentlichen URLs prüft, und dem json-exporter, der zwei Tasmota-Steckdosen und die Authentik-API abfragt, sowie von Falco auf dem NAS, cicdbox0 und agentbox0. Die Ergebnisse von ClamAV und Trivy liest der node-exporter der jeweiligen VM aus einer Textdatei. Grafana zeigt die Daten in sechs Dashboards, Alertmanager verschickt Alarme per E-Mail.</desc>
 
             <!-- Sources: y = 24 + i * 64 -->
             <rect class="d-box" x="16" y="24" width="240" height="52" rx="9"/>
-            <text class="d-title" x="30" y="46">NAS-VM · cicdbox0</text>
+            <text class="d-title" x="30" y="46">NAS · cicdbox0 · agentbox0</text>
             <text class="d-sub" x="30" y="64">node-exporter · cAdvisor</text>
 
             <rect class="d-box" x="16" y="88" width="240" height="52" rx="9"/>
@@ -873,14 +883,16 @@
         <p>
           <strong>ClamAV</strong> prüft alle 15 Minuten, was neu in den Bibliotheken für
           Bücher und Hörbücher liegt, und verschiebt Infiziertes in eine Quarantäne. Nachts
-          liest es jede Datei auf dem NAS, meldet dort aber nur: Ein Fehlalarm, der eine Datei
+          liest es auf dem ganzen NAS, was sich seit dem letzten Lauf geändert hat, in der
+          Nacht auf Samstag jede Datei – so werden auch alte Dateien gegen neue Signaturen
+          geprüft. Dort meldet es nur: Ein Fehlalarm, der eine Datei
           aus dem System oder einem Backup verschiebt, richtet mehr Schaden an als der Fund.
           Der Daemon, der die Dateien parst, läuft unter einer eigenen uid ohne Leserechte;
           geöffnet werden sie von einem zweiten Prozess, der ihm nur die Deskriptoren reicht.
         </p>
         <p>
           <strong>Trivy</strong> durchsucht jede Nacht jedes Image aus den Compose-Dateien,
-          die beiden selbst gebauten Jenkins-Images und die Debian-Pakete jedes Hosts nach
+          die beiden selbst gebauten Jenkins-Images samt ihrer Plugins und die Debian-Pakete jedes Hosts nach
           Lücken der Stufe HIGH oder CRITICAL, für die es einen Fix gibt. Es ist ein eigener
           Job, damit eine neue CVE in einem unveränderten Image keinen Deploy aufhält. Eine
           Mail kommt erst, wenn ein CRITICAL eine Woche lang offen bleibt.
@@ -891,7 +903,7 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 330" role="img" aria-labelledby="d6-title d6-desc">
             <title id="d6-title">Erkennung auf den Knoten</title>
-            <desc id="d6-desc">Drei Werkzeuge melden an Prometheus auf dem Raspberry Pi: Falco prüft laufend die Syscalls auf dem NAS, cicdbox0 und agentbox0, und Prometheus fragt seine Zähler direkt ab. ClamAV prüft alle 15 Minuten neue Bücher und Hörbücher und nachts jede Datei auf dem NAS; seine Ergebnisse liest der node-exporter des NAS aus einer Textdatei. Trivy scannt nachts auf lint0 die Images und die Debian-Pakete der Hosts; seine Ergebnisse liest der node-exporter auf cicdbox0. Alertmanager verschickt jeden Fund per E-Mail.</desc>
+            <desc id="d6-desc">Drei Werkzeuge melden an Prometheus auf dem Raspberry Pi: Falco prüft laufend die Syscalls auf dem NAS, cicdbox0 und agentbox0, und Prometheus fragt seine Zähler direkt ab. ClamAV prüft alle 15 Minuten neue Bücher und Hörbücher, nachts die geänderten Dateien auf dem NAS und einmal pro Woche jede; seine Ergebnisse liest der node-exporter des NAS aus einer Textdatei. Trivy scannt nachts auf lint0 die Images, die Jenkins-Plugins und die Debian-Pakete der Hosts; seine Ergebnisse liest der node-exporter auf cicdbox0. Alertmanager verschickt jeden Fund per E-Mail.</desc>
 
             <!-- Scanners: y = 20 + i * 92 -->
             <rect class="d-box" x="16" y="20" width="320" height="76" rx="9"/>
@@ -901,12 +913,12 @@
 
             <rect class="d-box" x="16" y="112" width="320" height="76" rx="9"/>
             <text class="d-title" x="30" y="136">ClamAV <tspan class="d-mono">· 15 min · nachts</tspan></text>
-            <text class="d-sub" x="30" y="154">neue Bücher · jede Datei auf dem NAS</text>
+            <text class="d-sub" x="30" y="154">neue Bücher · NAS: Neues, samstags alles</text>
             <text class="d-sub" x="30" y="172">Textdatei → node-exporter</text>
 
             <rect class="d-box" x="16" y="204" width="320" height="76" rx="9"/>
             <text class="d-title" x="30" y="228">Trivy <tspan class="d-mono">· nachts</tspan></text>
-            <text class="d-sub" x="30" y="246">Images · Debian-Pakete der Hosts</text>
+            <text class="d-sub" x="30" y="246">Images · Jenkins-Plugins · Host-Pakete</text>
             <text class="d-sub" x="30" y="264">auf lint0 · Textdatei auf cicdbox0</text>
 
             <rect class="d-box d-box--accent" x="420" y="118" width="190" height="64" rx="10"/>
@@ -960,8 +972,9 @@
           <p class="card__text">
             ClamAV liest Dateien bis 2&nbsp;GB, größere gelten ungelesen als sauber; gegen eine
             so aufgeblähte Datei hilft nur, dass Downloads mit den typischen Endungen von
-            Schadsoftware gar nicht erst angenommen werden. Trivy liest die Jenkins-Plugins
-            nicht und gleicht Pakete nur mit Debians Security-Tracker ab – Proxmox' eigene
+            Schadsoftware gar nicht erst angenommen werden. Trivy prüft nur die Jenkins-Plugins,
+            die im Image stecken, nicht die über die Oberfläche nachinstallierten, und gleicht
+            Pakete nur mit Debians Security-Tracker ab – Proxmox' eigene
             Pakete gelten damit als sauber, was hier heißt: ungeprüft.
           </p>
         </article>
@@ -1005,8 +1018,8 @@
         <article class="card">
           <h3>Agent-Box</h3>
           <ul class="tags">
-            <li>Proxmox</li><li>Claude Code</li><li>pi</li><li>herdr</li><li>ai-agents-orchestrator</li>
-            <li>Docker</li><li>Jenkins-Agent</li><li>Falco</li><li>node-exporter</li>
+            <li>Proxmox</li><li>Claude Code</li><li>pi</li><li>herdr</li><li>octoflow-ai</li>
+            <li>Docker</li><li>Jenkins-Agent</li><li>Falco</li><li>node-exporter</li><li>cAdvisor</li>
           </ul>
         </article>
       </div>
@@ -1019,6 +1032,7 @@
       <a href="index.html">Startseite</a>
       <a href="lektuere.html">Lektüre</a>
       <a href="zertifizierungen.html">Zertifizierungen</a>
+      <a href="https://blog.kryochamber.xyz" target="_blank" rel="noopener noreferrer">Filmblog</a>
       <a href="https://www.linkedin.com/in/david-siegl-2bb168227/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       <a href="mailto:david.siegl95@gmail.com">E-Mail</a>
     </p>
