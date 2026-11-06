@@ -18,6 +18,7 @@
     <a href="homelab.html">Homelab</a>
     <a href="lektuere.html">Lektüre</a>
     <a href="zertifizierungen.html">Zertifizierungen</a>
+    <a href="https://blog.kryochamber.xyz" target="_blank" rel="noopener noreferrer">Filmblog</a>
   </nav>
 
   <header class="hero">
@@ -172,19 +173,30 @@
       <div class="projects">
 
         <a class="project" href="https://github.com/DavidSiegl/octoflow-ai" target="_blank" rel="noopener noreferrer">
-          <span class="project__head"><span class="project__name">octoflow-ai</span><span class="project__lang">Rust, TypeScript</span></span>
+          <span class="project__head"><span class="project__name">octoflow-ai</span><span class="project__lang">Rust, Python, TypeScript</span></span>
           <span class="project__desc">
-            Orchestrierungs-Engine für das automatisches Management mehrerer zusammenhängender Agent-Sessions.
+            Orchestrierungs-Engine für das automatische Management mehrerer zusammenhängender Agent-Sessions.
             Octoflow AI erlaubt das Anlegen und Verwenden vordefinierter Rollen-Workflows
             (wie bspw. Spec Collector -> Builder -> Reviewer), die zur Laufzeit die jeweiligen Tasks einander weiterreichen.
+            Jede Rolle läuft im Coding-Agent nach Wahl – Claude Code, Codex, Gemini CLI, opencode oder pi.
             Ein optionales Quality Gate kann per CI-CD-Pipeline zusätzlich eingerichtet werden, um jeden Agent-Durchlauf zu überprüfen,
             bevor der Reviewer das Ergebnis sieht.
           </span>
+        </a>
+
+        <a class="project" href="https://github.com/DavidSiegl/octoflow-gate" target="_blank" rel="noopener noreferrer">
+          <span class="project__head"><span class="project__name">octoflow-gate</span><span class="project__lang">Rust</span></span>
+          <span class="project__desc">
+            Das Quality Gate von octoflow-ai als eigenständiges Werkzeug für Python- und Rust-Projekte:
+            Es bewertet nur, was eine Änderung hinzufügt – Linter, Tests und die Abdeckung neuen Codes –
+            und erkennt geschwächte Tests, wachsende Komplexität und überlebende Mutanten.
+          </span>
+        </a>
 
         <a class="project" href="https://github.com/DavidSiegl/hyprmuse" target="_blank" rel="noopener noreferrer">
           <span class="project__head"><span class="project__name">hyprmuse</span><span class="project__lang">Python</span></span>
           <span class="project__desc">
-            Zufällige Zitate aus Wikiquote, Genius und PoetryDB für den <code>hyprlock</code>-Sperrbildschirm.
+            Zufällige Zitate aus Wikiquote, Genius, PoetryDB und Project Gutenberg für den <code>hyprlock</code>-Sperrbildschirm.
             Alles liegt offline in einer lokalen Bibliothek, der Lockscreen wartet nie auf das Netz.
           </span>
         </a>
@@ -213,14 +225,6 @@
           </span>
         </a>
 
-        <a class="project" href="https://github.com/DavidSiegl/static-site-generator" target="_blank" rel="noopener noreferrer">
-          <span class="project__head"><span class="project__name">static-site-generator</span><span class="project__lang">Python</span></span>
-          <span class="project__desc">
-            Markdown zu statischem HTML, mit eigenem Parser für Inline-Auszeichnung und
-            Blockstrukturen – inklusive Testsuite.
-          </span>
-        </a>
-
       </div>
     </section>
   </main>
@@ -231,6 +235,7 @@
       <a href="homelab.html">Homelab</a>
       <a href="lektuere.html">Lektüre</a>
       <a href="zertifizierungen.html">Zertifizierungen</a>
+      <a href="https://blog.kryochamber.xyz" target="_blank" rel="noopener noreferrer">Filmblog</a>
       <a href="https://github.com/DavidSiegl" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="https://www.linkedin.com/in/david-siegl-2bb168227/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       <a href="mailto:david.siegl95@gmail.com">E-Mail</a>
