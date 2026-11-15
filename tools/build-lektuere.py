@@ -25,7 +25,7 @@ GROUPS = [
       "Mastering Regular Expressions", "Classic Shell Scripting", "Fluent Python",
       "A Philosophy of Software Design", "Fundamentals of Software Architecture"]),
     ("Grundlagen & Systeme",
-     "Was unter der Abstraktion liegt: vom Logikgatter bis zum laufenden Linux-System.",
+     "Was unter der Abstraktion liegt: vom Logic Gate bis zum laufenden Linux-System.",
      ["Code", "How Computers Really Work", "How Linux Works", "Algorithms to Live By"]),
     ("DevOps, Container & Delivery",
      "Der Kern meiner täglichen Arbeit: Systeme reproduzierbar bauen, ausrollen und betreiben.",
