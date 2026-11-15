@@ -39,8 +39,8 @@
     <h1>Homelab</h1>
     <p class="bio">
       Zu Hause betreibe ich im Kleinen, was ich beruflich im Großen mache: Dienste, die
-      reproduzierbar ausgerollt, überwacht und abgesichert werden. Drei Knoten, die Dienste
-      alle in Docker Compose und in Git – kein Container läuft, der nicht in einem Commit steht.
+      reproduzierbar ausgerollt, überwacht und abgesichert werden. Auf drei Knoten liegen alle Dienste in Docker Compose und in Git.
+      Kein Container läuft, der nicht in einem Commit steht.
     </p>
     <p class="bio">
       Diese Seite zeigt, wie die Teile zusammenhängen, und vor allem, <em>warum</em> sie so
@@ -65,8 +65,8 @@
         <p>
           Der Workload ist auf drei Geräte verteilt. Der <strong>Raspberry Pi</strong> ist der
           Edge-Knoten: Nur er nimmt Verbindungen aus dem Internet an, terminiert TLS,
-          entscheidet über Sperren und beobachtet alles andere. Das <strong>NAS</strong> trägt
-          die hauptsächliche Last – Medien, Dateien, Bücher, Anmeldung – und ist von außen nie direkt erreichbar.
+          entscheidet über Sperren und beobachtet alles andere. Das <strong>NAS</strong> trägt den Großteil der Dienste, nämlich Medien, Dateien,
+          Bücher und die Anmeldung, und ist von außen nie direkt erreichbar.
           Auf seiner Hardware läuft Proxmox als Hypervisor, die Docker-Dienste in einer
           schlichten Debian-VM darüber.
         </p>
@@ -76,15 +76,14 @@
           Diensten, die Anfragen aus dem Internet beantworten. Die Firewall von Proxmox lässt
           nur herein, was die VM wirklich braucht: die Jenkins-Oberfläche aus dem LAN, SSH vom
           Laptop und die Scrapes vom Pi. Ihre Platte liegt nicht auf dem Datenpool des NAS,
-          sondern auf dem Systempool des Hosts – so kann die VM bei Bedarf auf den anderen
+          sondern auf dem Systempool des Hosts. So kann die VM bei Bedarf auf den anderen
           Knoten des Clusters umziehen.
         </p>
         <p>
           Der dritte Knoten, die <strong>Agent-Box</strong>, ist ein zweiter Proxmox-Host mit
-          einer VM, in der Coding-Agents arbeiten – Claude Code und pi. Sie steht bewusst nicht als weitere
-          VM auf dem NAS: Ein Agent mit Shell führt Befehle aus, die niemand vorher gelesen hat.
-          Läuft einer aus dem Ruder – füllt die Platte, frisst Speicher, löscht das Falsche –,
-          trifft es auf eigener Hardware nur seine VM, nicht den Pool mit den Daten und nicht
+          einer VM, in der die Coding-Agents Claude Code und pi arbeiten. Sie läuft bewusst nicht
+          als weitere VM auf dem NAS, denn ein Agent mit Shell führt Befehle aus, die niemand
+          vorher gelesen hat. Füllt einer die Platte, frisst Speicher oder löscht das Falsche, trifft es auf eigener Hardware nur seine VM, nicht den Pool mit den Daten und nicht
           die Dienste daneben. Gesteuert werden die Sessions mit <strong>herdr</strong>, einem
           Terminal-Workspace für Coding-Agents: Sie laufen in der VM, und ich hänge mich vom
           Desktop aus an und wieder ab. Wie die Agents dort arbeiten und was sie erreichen
@@ -93,7 +92,7 @@
         <p>
           NAS und Agent-Box bilden einen Proxmox-Cluster mit einer gemeinsamen Oberfläche. Zwei
           Knoten allein haben dabei ein Quorum-Problem: Fällt einer aus, fehlt dem anderen die
-          Mehrheit, und Proxmox sperrt die Cluster-Konfiguration – VMs lassen sich dann weder
+          Mehrheit, und Proxmox sperrt die Cluster-Konfiguration. VMs lassen sich dann weder
           starten noch ändern. Der Pi gibt deshalb als QDevice die dritte Stimme ab. Dafür
           braucht er nur <code>corosync-qnetd</code>, keinen Proxmox, und jeder der beiden
           Hosts bleibt allein handlungsfähig.
@@ -226,7 +225,7 @@
 
     <section id="eingaenge" class="section section--alt">
       <h2>Drei Eingänge, eine Grenze</h2>
-      <p class="section__lede">Ein <code>Host(…)</code>-Filter hält niemanden draußen – der Port schon.</p>
+      <p class="section__lede">Ein <code>Host(…)</code>-Filter hält niemanden draußen, ein nicht weitergeleiteter Port schon.</p>
 
       <div class="prose">
         <p>
@@ -235,7 +234,7 @@
           Client selbst; jeder Router auf <code>:443</code> ist deshalb öffentlich, egal auf
           welchen Namen er hört. Grafana, Prometheus, Alertmanager und die Jenkins-Oberfläche
           liegen darum auf einem eigenen Entrypoint, <code>:8443</code>, den der Router
-          nicht weiterleitet – die Monitoring-Oberflächen liegen zusätzlich hinter Basic Auth,
+          nicht weiterleitet. Die Monitoring-Oberflächen liegen zusätzlich hinter Basic Auth,
           Jenkins hinter seinem eigenen Login.
         </p>
         <p>
@@ -340,7 +339,7 @@
         <article class="card">
           <h3>Jenkins nur als Webhook</h3>
           <p class="card__text">
-            Jenkins hält den SSH-Schlüssel für jeden Host, auf den es deployt – wer Jenkins
+            Jenkins hält den SSH-Schlüssel für jeden Host, auf den es deployt. Wer Jenkins
             kontrolliert, ist root auf allen. Öffentlich ist deshalb genau ein Pfad, der GitHub-Webhook.
             Alles andere auf diesem Host beantwortet Traefik mit 404, bevor es Jenkins
             erreicht.
@@ -355,7 +354,7 @@
 
       <div class="prose">
         <p>
-          Authentik auf dem NAS ist das eine Login für alle, die die Dienste nutzen – mich,
+          Authentik auf dem NAS ist das eine Login für alle, die die Dienste nutzen: mich,
           den Haushalt und gelegentliche Gäste. Nextcloud, Audiobookshelf, Calibre-Web und
           Shelfmark sprechen OpenID Connect. Jellyfin bekommt LDAP über einen eigenen
           Outpost, denn die Apps auf Fernseher und Telefon können kein OIDC, schicken aber
@@ -374,8 +373,7 @@
           <h3>Lokaler Admin bleibt</h3>
           <p class="card__text">
             Jeder angebundene Dienst behält ein lokales Admin-Konto neben SSO. Das ist der
-            Rückweg für jede Integration und der Zugang, wenn Authentik ausfällt – ein
-            Ausfall kostet Bequemlichkeit, nie den Zugriff. Jenkins, CouchDB und Ghost sind
+            Rückweg für jede Integration und der Zugang, wenn Authentik ausfällt. Ein Ausfall kostet dann Bequemlichkeit, aber nie den Zugriff. Jenkins, CouchDB und Ghost sind
             bewusst gar nicht angebunden.
           </p>
         </article>
@@ -411,14 +409,14 @@
           Jeder Dienst ist ein Verzeichnis mit einer Compose-Datei. Ein Push auf
           <code>main</code> löst über den Webhook die Pipeline aus: Sie prüft alle
           Compose-Dateien und Jenkinsfiles, lässt MegaLinter über das ganze Repository
-          laufen und führt die Tests der eigenen Skripte aus – wo ein Container ein Skript
-          einbindet, im Image dieses Containers, mit dessen Python. Danach spiegelt sie das
+          laufen und führt die Tests der eigenen Skripte aus. Bindet ein Container ein Skript ein, laufen
+          dessen Tests im Image dieses Containers, mit dessen Python. Danach spiegelt sie das
           Repository per rsync auf die Hosts, schreibt die
           Secrets aus den Jenkins-Credentials in <code>.env</code>-Dateien und rollt nur die
           Stacks neu aus, deren Verzeichnis sich geändert hat. Ein Skript prüft dann, dass
           jeder Container läuft, gesund ist und nicht in einem Crash-Loop hängt. Zum Schluss
           hinterlegt die Pipeline für jeden Host, welche Container dort laufen sollen; fehlt
-          später einer davon, meldet das ein Alarm – auch lange nach dem Deploy.
+          später einer davon, meldet das ein Alarm, auch lange nach dem Deploy.
         </p>
         <p>
           „Geändert“ heißt dabei: seit dem letzten <em>erfolgreichen</em> Build, nicht seit
@@ -531,8 +529,8 @@
             <path class="d-edge d-edge--accent" d="M821 250 V278" marker-end="url(#arrow-accent)"/>
             <text class="d-edge-label" x="623" y="243" text-anchor="middle">SSH · docker compose · nur geänderte Stacks</text>
 
-            <text class="d-note" x="16" y="286">Mail nur bei failure und fixed –</text>
-            <text class="d-note" x="16" y="304">ein leeres Postfach heißt: nichts ist kaputt.</text>
+            <text class="d-note" x="16" y="286">Mail nur bei failure und fixed.</text>
+            <text class="d-note" x="16" y="304">Ein leeres Postfach heißt, nichts ist kaputt.</text>
           </svg>
         </div>
         <figcaption>
@@ -548,8 +546,8 @@
             Jedes Image ist auf eine Version festgelegt, damit Git immer sagt, was läuft.
             Minor-, Patch- und Digest-Updates committet Renovate nachts gesammelt direkt auf
             <code>main</code>; Major-Updates kommen als Pull Request. Releases, die jünger als
-            drei Tage sind, bleiben liegen – somit erreichen vorschnelle Commits upstream, die später doch wieder zurückgezogen werden,
-            die Knoten downstream nie.
+            drei Tage sind, bleiben liegen. Was upstream vorschnell veröffentlicht und bald wieder zurückgezogen
+            wird, erreicht die Knoten so nie.
           </p>
         </article>
         <article class="card">
@@ -557,7 +555,7 @@
           <p class="card__text">
             Ein Job kann den Controller, auf dem er läuft, nicht neu starten. Er übergibt
             deshalb zuletzt an ein Skript auf cicdbox0: Jenkins stoppen, <code>jenkins_home</code>
-            sichern, neue Images umtaggen, starten und prüfen – Login, Plugins, beide Agents.
+            sichern, neue Images umtaggen, starten und Login, Plugins und beide Agents prüfen.
             Scheitert ein Step, rollt das Skript selbstständig zurück.
           </p>
         </article>
@@ -565,8 +563,8 @@
           <h3>Plugins als Code</h3>
           <p class="card__text">
             Die komplette Plugin-Liste des Controllers steht versioniert im Repository, und
-            Renovate hebt sie in einem Commit an – Plugins geben Mindestversionen
-            voneinander an.
+            Renovate hebt sie in einem einzigen Commit an, weil Plugins Mindestversionen
+            voneinander verlangen.
           </p>
         </article>
       </div>
@@ -586,7 +584,7 @@
           prüft das Ergebnis in einer frischen Sitzung gegen die Spezifikation und schickt es
           bei Bedarf zurück. Jede Rolle ist eine eigene Agent-Sitzung in einem herdr-Pane:
           Keine bewertet ihre eigene Arbeit, und ich kann jeder zusehen oder eingreifen. Die
-          Rollen müssen nicht einmal im selben Harness laufen: Neben Claude Code läuft auf der
+          Rollen müssen nicht einmal im selben Coding-Agent laufen: Neben Claude Code läuft auf der
           Box <a href="https://github.com/badlogic/pi-mono" target="_blank" rel="noopener noreferrer">pi</a>,
           ein schlanker Coding-Agent, der die Modelle beliebiger Anbieter anspricht. Schreibt
           Claude Code, kann pi mit dem Modell eines anderen Anbieters prüfen, damit das Review
@@ -603,14 +601,14 @@
           ein Pull Request auf GitHub, den ich lese, bevor etwas gemergt wird.
         </p>
         <p>
-          Die Box selbst gilt als nicht vertrauenswürdig – nicht weil die Agents böswillig
-          wären, sondern weil sie unbeaufsichtigt Text aus dem Internet lesen: Issues,
+          Die Box selbst gilt als nicht vertrauenswürdig. Die Agents sind nicht böswillig, aber
+          sie lesen unbeaufsichtigt Text aus dem Internet: Issues,
           Dokumentation, READMEs von Paketen. Eine Prompt-Injection dort steuert einen Agent
           mit Shell. Die Frage ist also nicht, ob die VM kompromittiert werden kann, sondern
           was sie dann erreicht. Die Antwort gibt die Firewall von Proxmox, die auf der Bridge
           des Hosts greift statt in der VM, sodass nicht einmal root darin sie ändern kann.
-          Ins Internet darf die VM über HTTP und HTTPS, SSH und NTP – genug für Anthropic-API,
-          GitHub und Paket-Registries. Vor Exfiltration schützt diese Port-Liste nicht, dafür
+          Ins Internet darf die VM über HTTP und HTTPS, SSH und NTP. Das reicht für die Anthropic-API,
+          GitHub und die Paket-Registries. Vor Exfiltration schützt diese Port-Liste nicht, dafür
           reicht 443; aber die Box verschickt keine Mails von der Adresse des Heimnetzes, tritt
           keinem Mining-Pool bei und scannt auf keinem anderen Port. Im Heimnetz erreicht die
           VM genau zwei Ziele: DNS am Router und Jenkins auf cicdbox0. Alles andere in den
@@ -624,7 +622,7 @@
         <div class="diagram__scroll">
           <svg viewBox="0 0 900 386" role="img" aria-labelledby="d5-title d5-desc">
             <title id="d5-title">Agent-Box und ihre Grenzen</title>
-            <desc id="d5-desc">In der VM agentbox0 auf der Agent-Box laufen die Rollen von octoflow-ai als getrennte Sitzungen von Claude Code oder pi in einem herdr-Workspace: Spec Collector, Builder und Reviewer, der Änderungen an den Builder zurückschicken kann. Daneben laufen ein Jenkins-Agent für die Builds der Agents als eingeschränkter Container und der Nutzer agent ohne docker-Gruppe. Die Firewall auf der Bridge des Proxmox-Hosts lässt die VM ins Internet über HTTP, HTTPS, SSH und NTP, im Heimnetz nur zu Jenkins auf Port 8084 auf der CI-VM cicdbox0 sowie zum DNS des Routers. Das restliche Heimnetz – Proxmox-Hosts, NAS, Raspberry Pi und Router-Oberfläche – wird verworfen.</desc>
+            <desc id="d5-desc">In der VM agentbox0 auf der Agent-Box laufen die Rollen von octoflow-ai als getrennte Sitzungen von Claude Code oder pi in einem herdr-Workspace: Spec Collector, Builder und Reviewer, der Änderungen an den Builder zurückschicken kann. Daneben laufen ein Jenkins-Agent für die Builds der Agents als eingeschränkter Container und der Nutzer agent ohne docker-Gruppe. Die Firewall auf der Bridge des Proxmox-Hosts lässt die VM ins Internet über HTTP, HTTPS, SSH und NTP, im Heimnetz nur zu Jenkins auf Port 8084 auf der CI-VM cicdbox0 sowie zum DNS des Routers. Verbindungen ins restliche Heimnetz, also zu Proxmox-Hosts, NAS, Raspberry Pi und Router-Oberfläche, verwirft die Firewall.</desc>
 
             <rect class="d-group" x="16" y="20" width="470" height="346" rx="14"/>
             <text class="d-group-title" x="32" y="46">Agent-Box <tspan class="d-mono">· Proxmox</tspan></text>
@@ -722,7 +720,7 @@
             Limits und unter einer anderen uid als die Agents, die sein Secret nicht lesen
             können. Der Preis des Tokens: Den Pflicht-Status am Pull Request setzt Jenkins mit
             einem Token, den auch die Agents haben. Er beweist also, dass ein Status gesetzt
-            wurde, nicht wer ihn gesetzt hat – gelesen wird der Pull Request deshalb von mir.
+            wurde, nicht wer ihn gesetzt hat. Den Pull Request lese deshalb ich.
           </p>
         </article>
       </div>
@@ -735,14 +733,15 @@
       <div class="prose">
         <p>
           Prometheus, Grafana und Alertmanager laufen auf dem Pi und beobachten alle drei Knoten
-          samt ihrer VMs – der Docker-VM und cicdbox0 auf dem NAS, agentbox0 auf der Agent-Box: node-exporter für den Host, cAdvisor für die Container, dazu die eigenen Metriken
-          von Traefik und Authentik. Die Festplatten und ZFS-Pools hängen am Proxmox-Host,
-          nicht an der VM – dort läuft deshalb ein eigener node-exporter für
+          samt ihrer VMs, also die Docker-VM und cicdbox0 auf dem NAS sowie agentbox0 auf der
+          Agent-Box. Die Metriken liefern node-exporter für den Host und cAdvisor für die
+          Container, dazu kommen die eigenen Metriken von Traefik und Authentik. Die Festplatten und ZFS-Pools hängen am Proxmox-Host,
+          nicht an der VM. Dort läuft deshalb ein eigener node-exporter für
           Laufwerkstemperaturen, Pool-Zustand, Prüfsummenfehler und das Alter des letzten
           Scrubs. Die Agent-Box bekommt denselben Exporter; sie hat keine NAS-Platten, nur
           ihren Systempool, dessen Zustand derselbe Pool-Alarm abdeckt. Der blackbox-exporter
           ruft die öffentlichen URLs von außen ab und fängt
-          damit ab, was ein gesunder Container nicht verrät – eine kaputte Route oder ein
+          damit ab, was ein gesunder Container nicht verrät, etwa eine kaputte Route oder ein
           abgelaufenes Zertifikat. Selbst der Jenkins-Webhook wird geprüft: Die Probe erwartet
           Jenkins' eigenes <code>405</code>, denn eine Route, die nicht mehr passt, würde
           Traefik mit <code>404</code> beantworten.
@@ -853,8 +852,8 @@
           <h3>Was nicht im Code steht</h3>
           <p class="card__text">
             Eine Firewall-Regel, Logrotate, CrowdSec-Pfade: Einiges lebt auf den Hosts statt
-            in einer Compose-Datei. Es ist im README festgehalten – samt dem Grund, warum es
-            nicht anders geht –, weil sich sonst beim Neuaufsetzen niemand daran erinnert.
+            in einer Compose-Datei. Das README hält es fest, samt dem Grund, warum es
+            nicht anders geht. Sonst erinnert sich beim Neuaufsetzen niemand daran.
           </p>
         </article>
       </div>
@@ -877,15 +876,14 @@
           Container startet, eine Credential-Datei, die ein unerwartetes Programm liest, ein
           Binary, das abgelegt und sofort ausgeführt wird. Die Treffer zählt Falco je Regel,
           und Prometheus holt die Zähler ab, statt dass Falco sie schickt. Dafür braucht jede
-          VM nur eine eingehende Regel für den Pi – Pushen hieße, der Agent-Box einen Weg zum
-          Pi zu öffnen, deren Firewall ihr sonst nichts im Heimnetz lässt.
+          VM nur eine eingehende Regel für den Pi. Würde Falco pushen, bräuchte die Agent-Box einen Weg
+          zum Pi, obwohl ihre Firewall ihr sonst nichts im Heimnetz erlaubt.
         </p>
         <p>
           <strong>ClamAV</strong> prüft alle 15 Minuten, was neu in den Bibliotheken für
           Bücher und Hörbücher liegt, und verschiebt Infiziertes in eine Quarantäne. Nachts
           liest es auf dem ganzen NAS, was sich seit dem letzten Lauf geändert hat, in der
-          Nacht auf Samstag jede Datei – so werden auch alte Dateien gegen neue Signaturen
-          geprüft. Dort meldet es nur: Ein Fehlalarm, der eine Datei
+          Nacht auf Samstag jede Datei. So prüft es auch alte Dateien gegen neue Signaturen. Dort meldet es nur: Ein Fehlalarm, der eine Datei
           aus dem System oder einem Backup verschiebt, richtet mehr Schaden an als der Fund.
           Der Daemon, der die Dateien parst, läuft unter einer eigenen uid ohne Leserechte;
           geöffnet werden sie von einem zweiten Prozess, der ihm nur die Deskriptoren reicht.
@@ -950,19 +948,19 @@
           <p class="card__text">
             Trivys Release-Pipeline wurde im März 2026 kompromittiert. Der Scanner bekommt
             deshalb dieselbe Behandlung wie MegaLinter: Er läuft auf lint0, ohne Credential, und
-            bekommt immer nur ein Objekt hinein – eine Image-Referenz, ein Image-Archiv oder den
+            bekommt immer nur ein Objekt hinein: eine Image-Referenz, ein Image-Archiv oder den
             Paket-Snapshot eines Hosts. Auf die Hosts selbst kommt er nie; sie liefern über SSH
             nur ihre dpkg-Datenbank. Das Image ist per Digest fixiert, und bevor ein Update
             gemergt wird, prüft cosign, dass Trivys eigener Release-Workflow es signiert hat.
           </p>
         </article>
         <article class="card">
-          <h3>Kein Falco auf dem Pi – noch</h3>
+          <h3>Noch kein Falco auf dem Pi</h3>
           <p class="card__text">
             Der Pi wäre der erste Kandidat: Er ist der einzige Host, den das Internet erreicht,
             und eine Shell aus Traefik heraus ist genau, wofür Falco da ist. Raspberry Pi OS
             baut seinen Kernel aber ohne BTF, und ohne BTF bleibt nur ein Kernel-Modul, das
-            nach jedem Kernel-Update neu gebaut werden muss – im Kernel der Maschine, vor der
+            nach jedem Kernel-Update neu gebaut werden muss, und zwar im Kernel der Maschine, vor der
             alle Dienste stehen. Das lohnt sich erst, wenn klar ist, wie laut Falco auf den
             anderen drei Hosts ist.
           </p>
@@ -974,8 +972,8 @@
             so aufgeblähte Datei hilft nur, dass Downloads mit den typischen Endungen von
             Schadsoftware gar nicht erst angenommen werden. Trivy prüft nur die Jenkins-Plugins,
             die im Image stecken, nicht die über die Oberfläche nachinstallierten, und gleicht
-            Pakete nur mit Debians Security-Tracker ab – Proxmox' eigene
-            Pakete gelten damit als sauber, was hier heißt: ungeprüft.
+            Pakete nur mit Debians Security-Tracker ab. Proxmox' eigene
+            Pakete gelten damit als sauber, obwohl sie niemand geprüft hat.
           </p>
         </article>
       </div>

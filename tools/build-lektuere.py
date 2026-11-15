@@ -19,7 +19,7 @@ OUT = pathlib.Path(__file__).resolve().parent.parent / "lektuere.html"
 
 GROUPS = [
     ("Handwerk & Programmierung",
-     "Wie man Code schreibt, der ein Jahr später noch lesbar ist – und wie man die Werkzeuge beherrscht, mit denen man ihn schreibt.",
+     "Wie man Code schreibt, der ein Jahr später noch lesbar ist, und wie man die Werkzeuge beherrscht, mit denen man ihn schreibt.",
      ["The C Programming Language", "The Practice of Programming", "The Pragmatic Programmer",
       "Think Like a Programmer", "The Art of Clean Code", "Learning Go", "Practical Vim",
       "Mastering Regular Expressions", "Classic Shell Scripting", "Fluent Python",
@@ -159,18 +159,17 @@ def main():
     <p class="eyebrow">Aus dem Zettelkasten</p>
     <h1>Lektüre</h1>
     <p class="bio">
-      Vieles an meiner Arbeit lässt sich nur durch gründliches und eingehendes (Selbst-)Studium erlernen sowie implementieren.
-      Wer eine Datenbank betreibt, muss verstehen, warum es ein Write-Ahead-Log gibt; wer Deployments automatisiert,
-      sollte wissen, welches Problem Continuous Delivery ursprünglich gelöst hat. Dieses Verständnis kommt aus
-      Büchern, die ein Thema von Grund auf entwickeln – nicht nur aus der Dokumentation der jeweils
-      aktuellen API-Version.
+      Vieles an meiner Arbeit kann ich nur durch gründliches (Selbst-)Studium lernen und umsetzen.
+      Wer eine Datenbank betreibt, muss verstehen, warum es ein Write-Ahead-Log gibt. Wer Deployments
+      automatisiert, sollte wissen, welches Problem Continuous Delivery ursprünglich gelöst hat. Dieses
+      Verständnis kommt aus Büchern, die ein Thema von Grund auf entwickeln, und nicht allein aus der
+      Dokumentation der jeweils aktuellen API-Version.
     </p>
     <p class="bio">
-      Gelesenes landet bei mir in einem digitalen Zettelkasten: jeder Titel eine Notiz, verknüpft
-      mit den Themen, auf die er rekurriert, und mit den Autoren, die ihn geschrieben haben. Was
-      hier steht, ist genau dieser Bestand — alle Notizen, die auf die Hauptnode
-      <code>Informatik</code> verweisen – abgeschlossene ebenso wie sich (noch) in der geistigen Pipeline
-      befindende Lektüre.
+      Was ich lese, landet in einem digitalen Zettelkasten. Jeder Titel ist eine Notiz, verknüpft
+      mit den Themen, auf die er sich bezieht, und mit seinen Autoren. Diese Seite zeigt alle Notizen,
+      die auf die Hauptnode <code>Informatik</code> verweisen, abgeschlossene Lektüre ebenso wie
+      Bücher, die ich noch lese.
     </p>
 
     <div class="epigraphs">
