@@ -39,7 +39,7 @@
     <h1>Homelab</h1>
     <p class="bio">
       Zu Hause betreibe ich im Kleinen, was ich beruflich im Großen mache: Dienste, die
-      reproduzierbar ausgerollt, überwacht und abgesichert werden. Auf drei Knoten liegen alle Dienste in Docker Compose und in Git.
+      reproduzierbar ausgerollt, überwacht und abgesichert werden. Die Dienste laufen auf drei Knoten und stehen alle in Docker Compose und in Git.
       Kein Container läuft, der nicht in einem Commit steht.
     </p>
     <p class="bio">
@@ -81,8 +81,7 @@
         </p>
         <p>
           Der dritte Knoten, die <strong>Agent-Box</strong>, ist ein zweiter Proxmox-Host mit
-          einer VM, in der die Coding-Agents Claude Code und pi arbeiten. Sie läuft bewusst nicht
-          als weitere VM auf dem NAS, denn ein Agent mit Shell führt Befehle aus, die niemand
+          einer VM, in der die Coding-Agents Claude Code und pi arbeiten. Sie steht bewusst nicht als weitere VM auf dem NAS, denn ein Agent mit Shell führt Befehle aus, die niemand
           vorher gelesen hat. Füllt einer die Platte, frisst Speicher oder löscht das Falsche, trifft es auf eigener Hardware nur seine VM, nicht den Pool mit den Daten und nicht
           die Dienste daneben. Gesteuert werden die Sessions mit <strong>herdr</strong>, einem
           Terminal-Workspace für Coding-Agents: Sie laufen in der VM, und ich hänge mich vom
